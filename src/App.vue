@@ -12,8 +12,11 @@ import HelloWorld from './components/HelloWorld.vue'
     </a>
   </div>
   <HelloWorld msg="Vite + Vue" />
+  <br>
+  <router-view></router-view>
   <a-space>
     <a-button type="primary">Primary</a-button>
+    <router-link to="/hello">yuans</router-link>
     <a-button>Secondary</a-button>
     <a-button type="dashed">Dashed</a-button>
     <a-button type="outline">Outline</a-button>
