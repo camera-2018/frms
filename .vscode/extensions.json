@@ -1,4 +1,3 @@
 {
-  "recommendations": ["Vue.volar", "Vue.vscode-typescript-vue-plugin"],
-  "typescript.preferences.autoImportFileExcludePatterns": ["vue-router"]
+  "recommendations": ["Vue.volar", "Vue.vscode-typescript-vue-plugin"]
 }

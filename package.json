@@ -1,22 +1,27 @@
 {
   "name": "vite-project",
-  "private": true,
-  "version": "0.0.0",
   "type": "module",
+  "version": "0.0.0",
+  "private": true,
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
+    "pinia": "^2.1.4",
     "unplugin-auto-import": "^0.16.4",
     "unplugin-vue-components": "^0.25.1",
     "vue": "^3.2.47",
     "vue-router": "^4.2.2"
   },
   "devDependencies": {
+    "@antfu/eslint-config": "^0.39.6",
     "@arco-design/web-vue": "^2.48.0",
     "@vitejs/plugin-vue": "^4.1.0",
+    "eslint": "^8.44.0",
     "typescript": "^5.0.2",
     "unplugin-vue-router": "^0.6.4",
     "vite": "^4.3.9",
