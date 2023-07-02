@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import {
   IconApps,
   IconBug,
@@ -9,7 +9,7 @@ import { defineComponent } from 'vue'
 defineComponent({
   name: 'Menumain',
   setup() {
-    const onCollapse = (collapsed) => {
+    const onCollapse = (collapsed: any) => {
       console.log(collapsed)
     }
 

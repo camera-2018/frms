@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import Menumain from './layout/menu.vue'
+import mainlayout from './layout/mainlayout.vue'
 </script>
 
 <template>
-  <Menumain />
-  <router-view />
+  <mainlayout />
 </template>
 
 <style scoped>
