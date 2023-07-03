@@ -1,9 +1,14 @@
 <script setup lang="ts">
-import mainlayout from './layout/mainlayout.vue'
 </script>
 
 <template>
-  <mainlayout />
+  <!-- <div v-if="checkUserAuthentication()">
+    <mainlayout />
+  </div>
+  <div v-else>
+    <login />
+  </div> -->
+  <router-view />
 </template>
 
 <style scoped>
