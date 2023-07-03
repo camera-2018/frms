@@ -1,9 +1,9 @@
 <script setup>
 import {
-  IconCalendar,
+  IconApps,
   IconCaretLeft,
   IconCaretRight,
-  IconTool,
+  IconFile,
   IconUser,
 } from '@arco-design/web-vue/es/icon'
 </script>
@@ -21,16 +21,20 @@ import {
         @menu-item-click="onClickMenuItem"
       >
         <a-menu-item key="0_1">
-          <IconTool />
-          报修项目上报
+          <IconApps />
+          <router-link to="/">
+            我的报修
+          </router-link>
         </a-menu-item>
         <a-menu-item key="0_2">
-          <IconCalendar />
-          流程跟踪
+          <IconFile />
+          <router-link to="/fix">
+            我要报修
+          </router-link>
         </a-menu-item>
         <a-sub-menu key="4">
           <template #title>
-            <IconUser /> 用户信息
+            <IconUser /> 我的信息
           </template>
           <a-menu-item key="4_1">
             个人信息维护
@@ -122,11 +126,11 @@ import {
 .layout-demo :deep(.arco-layout-content)  {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  /* justify-content: center; */
   color: var(--color-white);
   font-size: 16px;
   font-stretch: condensed;
-  text-align: center;
+  /* text-align: center; */
 }
 
 .avatar {
