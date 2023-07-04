@@ -44,7 +44,7 @@ async function handleSubmit({
       const { username, password } = values
       loginConfig.value.username = rememberPassword ? username : ''
       loginConfig.value.password = rememberPassword ? password : ''
-      router.push('/')
+      router.push('/list')
     }
     catch (err) {
       errorMessage.value = (err as Error).message
