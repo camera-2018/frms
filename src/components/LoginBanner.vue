@@ -5,17 +5,17 @@ const carouselItem = computed(() => [
   {
     slogan: '原神',
     subSlogan: '启动',
-    image: '../public/login-banner.png',
+    image: '/login-banner.png',
   },
   {
     slogan: '原神',
     subSlogan: '启动',
-    image: '../public/login-banner.png',
+    image: '/login-banner.png',
   },
   {
     slogan: '原神',
     subSlogan: '启动',
-    image: '../public/login-banner.png',
+    image: '/login-banner.png',
   },
 ])
 </script>

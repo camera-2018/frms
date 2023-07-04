@@ -78,13 +78,13 @@ function setRememberPassword(value: boolean) {
     >
       <a-form-item
         field="username"
-        :rules="[{ required: true, message: '错误' }]"
+        :rules="[{ required: true, message: '请输入用户名' }]"
         :validate-trigger="['change', 'blur']"
         hide-label
       >
         <a-input
           v-model="userInfo.username"
-          placeholder="原神"
+          placeholder="用户名"
         >
           <template #prefix>
             <IconUser />
@@ -93,7 +93,7 @@ function setRememberPassword(value: boolean) {
       </a-form-item>
       <a-form-item
         field="password"
-        :rules="[{ required: true, message: '错误' }]"
+        :rules="[{ required: true, message: '请输入密码' }]"
         :validate-trigger="['change', 'blur']"
         hide-label
       >
