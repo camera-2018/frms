@@ -20,18 +20,24 @@ import {
         :style="{ width: '100%' }"
         @menu-item-click="onClickMenuItem"
       >
-        <a-menu-item key="0_1">
-          <IconApps />
-          <router-link to="/">
+        <router-link to="/list">
+          <a-menu-item key="0_1">
+            <IconApps />
             我的报修
-          </router-link>
-        </a-menu-item>
-        <a-menu-item key="0_2">
-          <IconFile />
-          <router-link to="/fix">
+          </a-menu-item>
+        </router-link>
+        <router-link to="/fix">
+          <a-menu-item key="0_2">
+            <IconFile />
             我要报修
-          </router-link>
-        </a-menu-item>
+          </a-menu-item>
+        </router-link>
+        <router-link to="/">
+          <a-menu-item key="0_3">
+            <IconUser />
+            我的信息
+          </a-menu-item>
+        </router-link>
         <a-sub-menu key="4">
           <template #title>
             <IconUser /> 我的信息
