@@ -1,5 +1,5 @@
 import { storeToRefs } from 'pinia'
-import { useUserStore } from '../store'
+import useUserStore from '../store/user'
 
 export function Guards(router: any) {
   router.beforeEach((to: any, from: any, next: any) => {

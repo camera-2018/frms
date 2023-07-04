@@ -8,12 +8,13 @@ import {
   IconLock,
   IconUser,
 } from '@arco-design/web-vue/es/icon'
-import { useLoading, useUserStore } from '../store'
+import useUserStore from '../store/user'
+import useAppStore from '../store/app'
 
 const router = useRouter()
 const errorMessage = ref('')
-const { loading } = storeToRefs(useLoading())
-const { setLoading } = useLoading()
+const { loading } = storeToRefs(useAppStore())
+const { setLoading } = useAppStore()
 
 const loginConfig = ref({
   rememberPassword: true,
