@@ -4,8 +4,25 @@ import {
   IconCaretLeft,
   IconCaretRight,
   IconFile,
+  IconHome,
   IconUser,
 } from '@arco-design/web-vue/es/icon'
+import { sendroute } from '../utils/sendroute'
+import useUserStore from '../store/user'
+
+const { setLogin } = useUserStore()
+const router = useRouter()
+const route = useRoute()
+function logout() {
+  setLogin(false)
+  router.push('/')
+}
+
+function onClickMenuItem(key) {
+  router.push(key)
+}
+
+const routeMenu = sendroute()
 </script>
 
 <template>
@@ -20,37 +37,28 @@ import {
         :style="{ width: '100%' }"
         @menu-item-click="onClickMenuItem"
       >
-        <router-link to="/list">
-          <a-menu-item key="0_1">
-            <IconApps />
-            我的报修
+        <div v-for="element in routeMenu" :key="element.key">
+          <a-menu-item v-if="element.sub.length === 0" :key="element.key">
+            <IconApps v-if="element.title === '我的报修'" />
+            <IconApps v-if="element.title === '我的维修'" />
+            <IconApps v-if="element.title === '记录管理'" />
+            <IconFile v-if="element.title === '我要报修'" />
+            <IconFile v-if="element.title === '任务委派'" />
+            <IconUser v-if="element.title === '我的信息'" />
+            {{ element.title }}
+
           </a-menu-item>
-        </router-link>
-        <router-link to="/fix">
-          <a-menu-item key="0_2">
-            <IconFile />
-            我要报修
-          </a-menu-item>
-        </router-link>
-        <router-link to="/user/info">
-          <a-menu-item key="0_3">
-            <IconUser />
-            我的信息
-          </a-menu-item>
-        </router-link>
-        <a-sub-menu key="4">
-          <template #title>
-            <IconUser /> 我的信息
-          </template>
-          <a-menu-item key="4_1">
-            个人信息维护
-          </a-menu-item>
-          <a-menu-item key="4_2">
-            部门信息查看
-          </a-menu-item>
-        </a-sub-menu>
+          <a-sub-menu v-if="element.sub.length !== 0" :key="element.key">
+            <template #title>
+              <IconUser v-if="element.title === '我的信息'" />
+              {{ element.title }}
+            </template>
+            <a-menu-item v-for="l in element.sub" :key="l.key">
+              {{ l.title }}
+            </a-menu-item>
+          </a-sub-menu>
+        </div>
       </a-menu>
-      <!-- trigger -->
       <template #trigger="{ collapsed }">
         <IconCaretRight v-if="collapsed" />
         <IconCaretLeft v-else />
@@ -61,7 +69,7 @@ import {
         <a-page-header>
           <template #extra>
             <a-space size="medium" class="space">
-              <a-button type="primary">
+              <a-button type="primary" @click="logout">
                 退出登录
               </a-button>
               <a-avatar class="avatar">
@@ -76,9 +84,12 @@ import {
       </a-layout-header>
       <a-layout style="padding: 0 24px;">
         <a-breadcrumb :style="{ margin: '16px 0' }">
-          <a-breadcrumb-item>Home</a-breadcrumb-item>
-          <a-breadcrumb-item>List</a-breadcrumb-item>
-          <a-breadcrumb-item>App</a-breadcrumb-item>
+          <a-breadcrumb-item>
+            <IconHome />
+          </a-breadcrumb-item>
+          <a-breadcrumb-item v-for="e in route.path.split('/').filter(item => item !== '')" :key="e">
+            {{ e }}
+          </a-breadcrumb-item>
         </a-breadcrumb>
         <a-layout-content>
           <router-view />

@@ -1,6 +1,7 @@
 <script setup>
-import { useRouter } from 'vue-router'
+import { ref } from 'vue'
 
+const router = useRouter()
 const res = [
   {
     title: '厕所灯泡不亮',
@@ -47,9 +48,12 @@ const color = {
   未核对: '#D8B024',
 }
 
-const router = useRouter()
-function toDetail(id) {
-  router.push(`/detail/${id}`)
+const is_worker = ref(true)
+function pushto(id) {
+  if (!is_worker.value)
+    router.push(`/detail/${id}`)
+  else
+    router.push(`/order/${id}`)
 }
 </script>
 
@@ -66,7 +70,7 @@ function toDetail(id) {
         </div>
       </template>
     </a-list-item>
-    <a-list-item v-for="element in res" :key="element.title" @click="toDetail(element.id)">
+    <a-list-item v-for="element in res" :key="element.title" class="list_item" @click="pushto(element.id)">
       <a-list-item-meta
         :title="element.title"
         :description="element.description"
@@ -79,3 +83,9 @@ function toDetail(id) {
     </a-list-item>
   </a-list>
 </template>
+
+<style scoped>
+.list_item {
+  @apply cursor-pointer;
+}
+</style>

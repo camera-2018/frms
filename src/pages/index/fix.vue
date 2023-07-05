@@ -1,109 +1,32 @@
 <script setup>
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useDateFormat, useNow } from '@vueuse/core'
 
 const router = useRouter()
 
 const current = ref(1)
+
+const isCommit = ref(false)
 
 const form = reactive({
   type: '',
   radio: '否',
   detail: '',
   workplace: '',
+  time: useDateFormat(useNow(), 'YYYY-MM-DD HH:mm:ss').value,
 })
 
-function convertDate({
-  time_str = null,
-  years = 0,
-  months = 0,
-  days = 0,
-  hours = 0,
-  minutes = 0,
-  seconds = 0,
-  inputTimezone = null,
-  outputTimezone = null,
-  timestamp = false,
-  format = 'YYYY-MM-DD hh:mm:ss',
-}) {
-  // 解析时区偏移量
-  const parseTimezoneOffset = (timezone) => {
-    const sign = timezone.charAt(3) === '-' ? -1 : 1
-    const hours = Number.parseInt(timezone.substr(4, 2), 10)
-    const minutes = Number.parseInt(timezone.substr(7, 2), 10)
-    const offset = sign * (hours * 60 + minutes)
-    return offset
-  }
-
-  // 应用时区偏移量到日期时间
-  const applyTimezoneOffset = (date, offset) => {
-    const utcTime = date.getTime() + date.getTimezoneOffset() * 60000
-    const localTime = utcTime + offset * 60000
-    return new Date(localTime)
-  }
-
-  // 如果 time_str 为空，则使用当前系统时间
-  let baseTime = time_str ? new Date(time_str) : new Date()
-
-  // 解析输入时区偏移量并修正时间
-  if (inputTimezone !== null) {
-    const inputOffset = parseTimezoneOffset(inputTimezone)
-    baseTime = applyTimezoneOffset(baseTime, inputOffset)
-  }
-
-  // 设置偏移量
-  baseTime.setFullYear(baseTime.getFullYear() + years)
-  baseTime.setMonth(baseTime.getMonth() + months)
-  baseTime.setDate(baseTime.getDate() + days)
-  baseTime.setHours(baseTime.getHours() + hours)
-  baseTime.setMinutes(baseTime.getMinutes() + minutes)
-  baseTime.setSeconds(baseTime.getSeconds() + seconds)
-
-  // 修正输出时区
-  if (outputTimezone !== null) {
-    const outputOffset = parseTimezoneOffset(outputTimezone)
-    baseTime = applyTimezoneOffset(baseTime, outputOffset)
-  }
-
-  // 输出时间戳
-  if (timestamp)
-    return baseTime.getTime()
-
-  // 格式化输出
-  if (format) {
-    const year = baseTime.getFullYear()
-    const month = String(baseTime.getMonth() + 1).padStart(2, '0')
-    const day = String(baseTime.getDate()).padStart(2, '0')
-    const hour = String(baseTime.getHours()).padStart(2, '0')
-    const minute = String(baseTime.getMinutes()).padStart(2, '0')
-    const second = String(baseTime.getSeconds()).padStart(2, '0')
-
-    const formattedDate = format
-      .replace('YYYY', year)
-      .replace('MM', month)
-      .replace('DD', day)
-      .replace('hh', hour)
-      .replace('mm', minute)
-      .replace('ss', second)
-
-    return formattedDate
-  }
-
-  return baseTime
-}
-
 function handleSubmit({ values, errors }) {
-  console.log('values:', values, '\nerrors:', errors)
+  console.log(values.value, errors)
   if (!errors)
     current.value = 2
+  else
+    current.value = 1
 }
 
 function onPret() {
   current.value = Math.max(1, current.value - 1)
-}
-
-function onNext() {
-  current.value = Math.min(2, current.value + 1)
 }
 
 function setCurrent(new_current) {
@@ -129,12 +52,12 @@ function onPost() {
         <a-step description="在这里填写维修基本信息">
           维修基本信息
         </a-step>
-        <a-step description="确认委派">
+        <a-step description="确认委派" :disabled="!isCommit.value">
           确认委派信息
         </a-step>
       </a-steps>
     </div>
-    <div class="content1">
+    <div class="m-form">
       <div v-if="current === 1">
         <a-form ref="formRef" size="large" :model="form" :style="{ width: '600px' }" @submit="handleSubmit">
           <a-form-item field="radio" label="是否加急" :rules="[{ required: true, message: '必须选择是否加急' }]">
@@ -165,6 +88,9 @@ function onPost() {
           </a-form-item>
           <a-form-item field="workplace" label="维修地点" :rules="[{ required: true, message: '必须输入维修地点' }]">
             <a-input v-model="form.workplace" placeholder="请输入维修地点..." />
+          </a-form-item>
+          <a-form-item field="img" label="图片">
+            <a-upload draggable action="/" list-type="picture" image-preview :limit="5" tip="可以上传PNG、JPG等格式的图片，最大限制5张50M" />
           </a-form-item>
           <a-form-item>
             <a-space>
@@ -203,7 +129,7 @@ function onPost() {
               {{ form.workplace }}
             </a-descriptions-item>
             <a-descriptions-item label="保修时间">
-              {{ convertDate({}) }}
+              {{ form.time }}
             </a-descriptions-item>
           </a-descriptions>
         </div>
@@ -224,17 +150,13 @@ function onPost() {
 
 <style scoped>
 .process{
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+  @apply h-full flex flex-col;
 }
 .next{
   padding: 5px;
 }
-.content1{
-  display: flex;
-  justify-content: center;
-  margin: 30px;
+.m-form {
+  @apply flex justify-center py-[7rem];
 }
 
 .button{
