@@ -32,7 +32,7 @@ import {
             我要报修
           </a-menu-item>
         </router-link>
-        <router-link to="/">
+        <router-link to="/user/info">
           <a-menu-item key="0_3">
             <IconUser />
             我的信息
