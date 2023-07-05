@@ -46,7 +46,7 @@ const menu_for_administrator = [
 const menu_for_worker = [
   {
     title: '我的维修',
-    key: '/fix',
+    key: '/list',
     sub: [],
   },
   {
@@ -60,5 +60,5 @@ const menu_for_worker = [
 ]
 
 export function sendroute() {
-  return menu_for_user
+  return menu_for_worker
 }

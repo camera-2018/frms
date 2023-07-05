@@ -40,6 +40,7 @@ const routeMenu = sendroute()
         <div v-for="element in routeMenu" :key="element.key">
           <a-menu-item v-if="element.sub.length === 0" :key="element.key">
             <IconApps v-if="element.title === '我的报修'" />
+            <IconApps v-if="element.title === '我的维修'" />
             <IconApps v-if="element.title === '记录管理'" />
             <IconFile v-if="element.title === '我要报修'" />
             <IconFile v-if="element.title === '任务委派'" />
@@ -85,7 +86,9 @@ const routeMenu = sendroute()
           <a-breadcrumb-item>
             <IconHome />
           </a-breadcrumb-item>
-          <a-breadcrumb-item>{{ route.path.replace('/', '') }}</a-breadcrumb-item>
+          <a-breadcrumb-item v-for="e in route.path.split('/').filter(item => item !== '')" :key="e">
+            {{ e }}
+          </a-breadcrumb-item>
         </a-breadcrumb>
         <a-layout-content>
           <router-view />

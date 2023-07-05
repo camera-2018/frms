@@ -1,4 +1,6 @@
 <script setup>
+import { ref } from 'vue'
+
 const router = useRouter()
 const res = [
   {
@@ -46,8 +48,12 @@ const color = {
   未核对: '#D8B024',
 }
 
-function detail(id) {
-  router.push(`/detail/${id}`)
+const is_worker = ref(true)
+function pushto(id) {
+  if (!is_worker.value)
+    router.push(`/detail/${id}`)
+  else
+    router.push(`/order/${id}`)
 }
 </script>
 
@@ -64,7 +70,7 @@ function detail(id) {
         </div>
       </template>
     </a-list-item>
-    <a-list-item v-for="element in res" :key="element.title" class="list_item" @click="detail(element.id)">
+    <a-list-item v-for="element in res" :key="element.title" class="list_item" @click="pushto(element.id)">
       <a-list-item-meta
         :title="element.title"
         :description="element.description"
