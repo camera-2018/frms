@@ -14,10 +14,7 @@ const menu_for_user = [
     key: '',
     sub: [{
       title: '个人信息维护',
-      key: '/profile',
-    }, {
-      title: '部门信息查看',
-      key: '/',
+      key: '/user/info',
     }],
   },
 ]
@@ -38,7 +35,7 @@ const menu_for_administrator = [
     key: '',
     sub: [{
       title: '个人信息维护',
-      key: '/profile',
+      key: '/user/profile',
     }],
   },
 ]
@@ -54,11 +51,11 @@ const menu_for_worker = [
     key: '',
     sub: [{
       title: '个人信息维护',
-      key: '/profile',
+      key: '/user/profile',
     }],
   },
 ]
 
 export function sendroute() {
-  return menu_for_worker
+  return menu_for_user
 }

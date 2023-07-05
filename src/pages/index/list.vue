@@ -48,7 +48,7 @@ const color = {
   未核对: '#D8B024',
 }
 
-const is_worker = ref(true)
+const is_worker = ref(false)
 function pushto(id) {
   if (!is_worker.value)
     router.push(`/detail/${id}`)

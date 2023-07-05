@@ -63,7 +63,7 @@ function onPost() {
       <a-descriptions :data="data" :size="size" label="User Info" :column="1" />
       <a-image
         width="200"
-        src="..\..\..\..\public\img\head.png"
+        src="/img/head.png"
       />
     </a-space>
     <a-space class="place-content-center mb-3">
