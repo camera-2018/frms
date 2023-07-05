@@ -1,34 +1,42 @@
 <script setup>
+import { useRouter } from 'vue-router'
+
 const res = [
   {
     title: '厕所灯泡不亮',
     description: '2022-04-01 杭州电子科技大学下沙生活区11号楼北517',
     status: '已评价',
+    id: 1,
   },
   {
     title: '厕所喷头掉落',
     description: '2022-04-01 杭州电子科技大学下沙生活区11号楼北517',
     status: '未评价',
+    id: 2,
   },
   {
     title: '空调制冷出问题',
     description: '2022-04-01 杭州电子科技大学下沙生活区11号楼北517',
     status: '未验收',
+    id: 3,
   },
   {
     title: '厕所门把手脱落',
     description: '2022-04-01 杭州电子科技大学下沙生活区11号楼北517',
     status: '未验收',
+    id: 4,
   },
   {
     title: '寝室门锁损坏',
     description: '2022-04-01 杭州电子科技大学下沙生活区11号楼北517',
     status: '未核对',
+    id: 5,
   },
   {
     title: '救救孩子，黑龙五猫',
     description: '2022-07-02 杭州电子科技大学下沙生活区11号楼北602',
     status: '已下单',
+    id: 6,
   },
 ]
 const color = {
@@ -38,10 +46,15 @@ const color = {
   未验收: '#FF0E0E',
   未核对: '#D8B024',
 }
+
+const router = useRouter()
+function toDetail(id) {
+  router.push(`/detail/${id}`)
+}
 </script>
 
 <template>
-  <a-list>
+  <a-list hoverable="true">
     <a-list-item>
       <a-list-item-meta
         title="故障详情"
@@ -53,7 +66,7 @@ const color = {
         </div>
       </template>
     </a-list-item>
-    <a-list-item v-for="element in res" :key="element.title">
+    <a-list-item v-for="element in res" :key="element.title" @click="toDetail(element.id)">
       <a-list-item-meta
         :title="element.title"
         :description="element.description"
