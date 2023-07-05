@@ -6,6 +6,8 @@ export function Guards(router: any) {
     const isAuthenticated = checkUserAuthentication()
     if (to.path !== '/login' && !isAuthenticated)
       next({ path: '/login' })
+    else if (to.path === '/login' && isAuthenticated)
+      next(from.path)
     else next()
   })
 }

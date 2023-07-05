@@ -59,7 +59,7 @@ function pushto(id) {
 
 <template>
   <a-list hoverable="true">
-    <a-list-item>
+    <a-list-item class="list_title">
       <a-list-item-meta
         title="故障详情"
         description="报修时间 报修地点"
@@ -87,5 +87,8 @@ function pushto(id) {
 <style scoped>
 .list_item {
   @apply cursor-pointer;
+}
+.list_title {
+  @apply bg-blue-100 hover:bg-blue-100
 }
 </style>

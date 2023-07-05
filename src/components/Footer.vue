@@ -6,6 +6,6 @@
 
 <style>
 .foot {
-  @apply text-center text-gray-400 font-mono text-xl;
+  @apply text-center text-gray-400 font-mono text-sm;
 }
 </style>

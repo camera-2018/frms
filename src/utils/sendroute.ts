@@ -1,3 +1,5 @@
+import useUserStore from '../store/user'
+
 const menu_for_user = [
   {
     title: '我的报修',
@@ -35,7 +37,7 @@ const menu_for_administrator = [
     key: '',
     sub: [{
       title: '个人信息维护',
-      key: '/user/profile',
+      key: '/user/info',
     }],
   },
 ]
@@ -51,11 +53,18 @@ const menu_for_worker = [
     key: '',
     sub: [{
       title: '个人信息维护',
-      key: '/user/profile',
+      key: '/user/info',
     }],
   },
 ]
 
 export function sendroute() {
-  return menu_for_user
+  if (useUserStore().role === 'admin')
+    return menu_for_administrator
+  if (useUserStore().role === 'user')
+    return menu_for_user
+  if (useUserStore().role === 'worker')
+    return menu_for_worker
+  else
+    return menu_for_user
 }

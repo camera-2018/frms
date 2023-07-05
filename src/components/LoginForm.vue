@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Message } from '@arco-design/web-vue'
+
 import type { ValidatedError } from '@arco-design/web-vue/es/form/interface'
 import { storeToRefs } from 'pinia'
 import {
@@ -18,11 +18,11 @@ const { setLoading } = useAppStore()
 
 const loginConfig = ref({
   rememberPassword: true,
-  username: 'admin', // 演示默认值
-  password: 'admin', // demo default value
+  account: 'sakuya',
+  password: 'ssr@129631',
 })
 const userInfo = reactive({
-  username: loginConfig.value.username,
+  account: loginConfig.value.account,
   password: loginConfig.value.password,
 })
 
@@ -38,13 +38,12 @@ async function handleSubmit({
   if (!errors) {
     setLoading(true)
     try {
-      useUserStore().setLogin(true)
-      Message.success('成功')
       const { rememberPassword } = loginConfig.value
-      const { username, password } = values
-      loginConfig.value.username = rememberPassword ? username : ''
+      const { account, password } = values
+      loginConfig.value.account = rememberPassword ? account : ''
       loginConfig.value.password = rememberPassword ? password : ''
-      router.push('/list')
+      await useUserStore().setLogin(account, password)
+      await router.push('/')
     }
     catch (err) {
       errorMessage.value = (err as Error).message
@@ -77,13 +76,13 @@ function setRememberPassword(value: boolean) {
       @submit="handleSubmit"
     >
       <a-form-item
-        field="username"
+        field="account"
         :rules="[{ required: true, message: '请输入用户名' }]"
         :validate-trigger="['change', 'blur']"
         hide-label
       >
         <a-input
-          v-model="userInfo.username"
+          v-model="userInfo.account"
           placeholder="用户名"
         >
           <template #prefix>
@@ -130,7 +129,7 @@ function setRememberPassword(value: boolean) {
 </template>
 
 <style scoped>
-  .login-form-wrapper {
+.login-form-wrapper {
   width: 320px;
 }
 

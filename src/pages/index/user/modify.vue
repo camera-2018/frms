@@ -1,26 +1,48 @@
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { IconEdit, IconPlus } from '@arco-design/web-vue/es/icon'
+import { useStorage } from '@vueuse/core'
+import { base_url } from '../../../utils/config'
+import useUserStore from '../../../store/user'
 
 const router = useRouter()
 
 const form = reactive({
-  type: '',
-  radio: '否',
-  account: '',
-  workplace: '',
+  name: '',
+  sex: '',
+  phone: '',
+  avatar: '',
+  department: '',
+  job_type: '',
 })
 
-function onReset() {
-  form.sex = ''
-  form.radio = '否'
-  form.name = ''
-  form.phone = ''
-  form.email = ''
-  onPost()
+async function res() {
+  const response = await fetch(`${base_url}/user/info`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${useStorage('token').value}`,
+    },
+  })
+  const data = (await response.json()).data
+  return data
 }
-function onPost() {
+
+watchEffect(async () => {
+  const dataFromRes = (await res()).user_info
+  Object.assign(form, dataFromRes)
+})
+
+async function handleSubmit(values) {
+  const response = await fetch(`${base_url}/user/info`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${useStorage('token').value}`,
+    },
+    body: JSON.stringify(values, null, 4),
+  })
   router.push('/user/info')
 }
 
@@ -45,7 +67,7 @@ function onProgress(currentFile) {
   <div class="process">
     <div class="content1">
       <div>
-        <a-form size="large" :model="form" :style="{ width: '600px' }" @submit="handleSubmit">
+        <a-form size="large" :model="form" :style="{ width: '600px' }" @submit-success="handleSubmit">
           <a-form-item field="name" label="姓名" :rules="[{ required: true, message: '必须输入姓名' }]">
             <a-input v-model="form.name" placeholder="请输入新的姓名" />
           </a-form-item>
@@ -65,17 +87,17 @@ function onProgress(currentFile) {
           <a-form-item field="phone" label="联系电话" :rules="[{ required: true, message: '必须输入联系电话' }]">
             <a-input v-model="form.phone" placeholder="请输入联系电话" />
           </a-form-item>
-          <a-form-item field="department" label="部门" :rules="[{ required: true, message: '必须输入部门' }]">
+          <a-form-item v-if="useUserStore().role !== 'worker'" field="department" label="部门" :rules="[{ required: true, message: '必须输入部门' }]">
             <a-input v-model="form.department" placeholder="请输入所在部门" />
           </a-form-item>
-          <a-form-item field="worker_type" label="工种" :rules="[{ required: true, message: '必须输入工种' }]">
-            <a-select v-model="form.worker_type" placeholder="请选择工种" allow-clear>
+          <a-form-item v-if="useUserStore().role === 'worker'" field="job_type" label="工种" :rules="[{ required: true, message: '必须输入工种' }]">
+            <a-select v-model="form.job_type" placeholder="请选择工种" allow-clear>
               <a-option v-for="t in type_of_worker" :key="t" :value="t">
                 {{ t }}
               </a-option>
             </a-select>
           </a-form-item>
-          <a-form-item field="avatar" label="头像" :rules="[{ required: true, message: '必须传入头像' }]">
+          <a-form-item field="avatar" label="头像">
             <a-space direction="vertical" :style="{ width: '100%' }">
               <a-upload
                 action="/"
@@ -126,10 +148,10 @@ function onProgress(currentFile) {
           </a-form-item>
           <a-form-item>
             <a-space class="mt-[3rem]">
-              <a-button html-type="submit" type="primary" class="ml-[6.5rem] " @click="onPost">
+              <a-button html-type="submit" type="primary" class="ml-[6.5rem] ">
                 提交
               </a-button>
-              <a-button class="ml-[5rem]" @click="onReset">
+              <a-button class="ml-[5rem]" @click="router.push('/user/info')">
                 返回
               </a-button>
             </a-space>
