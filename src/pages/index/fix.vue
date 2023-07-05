@@ -2,7 +2,6 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDateFormat, useNow } from '@vueuse/core'
-import { Message } from '@arco-design/web-vue'
 
 const router = useRouter()
 
@@ -19,7 +18,7 @@ const form = reactive({
 })
 
 function handleSubmit({ values, errors }) {
-  Message.error(errors)
+  console.log(values.value, errors)
   if (!errors)
     current.value = 2
   else

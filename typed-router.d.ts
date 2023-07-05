@@ -43,6 +43,7 @@ declare module 'vue-router/auto/routes' {
     '//detail/[id]': RouteRecordInfo<'//detail/[id]', '/detail/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
     '//fix': RouteRecordInfo<'//fix', '/fix', Record<never, never>, Record<never, never>>,
     '//list': RouteRecordInfo<'//list', '/list', Record<never, never>, Record<never, never>>,
+    '//tasklist': RouteRecordInfo<'//tasklist', '/tasklist', Record<never, never>, Record<never, never>>,
     '/login': RouteRecordInfo<'/login', '/login', Record<never, never>, Record<never, never>>,
   }
 }
