@@ -81,8 +81,8 @@ async function actual() {
       'Authorization': `Bearer ${useStorage('token').value}`,
     },
     body: JSON.stringify({
-      estimate_cost: estimate_cost.value,
-      estimate_receipt,
+      actual_cost: estimate_cost.value,
+      actual_receipt: estimate_receipt,
       is_free: is_free.value,
       result: result.value,
     }),

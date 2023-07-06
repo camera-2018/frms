@@ -317,7 +317,7 @@ const color = {
           <div class="flex items-begin gap-y-3 flex-1 flex-col">
             <div class="flex items-center gap-x-5">
               <div>满意程度</div>
-              <a-rate v-model="rate" allow-half />
+              <a-rate v-model="rate" allow-half default-value="2.5" />
             </div>
             <div class="gap-y-2 flex flex-col">
               <div>评论</div>
