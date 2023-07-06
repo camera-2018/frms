@@ -13,5 +13,5 @@ export function Guards(router: any) {
 }
 
 export function checkUserAuthentication() {
-  return storeToRefs(useUserStore()).login.value
+  return storeToRefs(useUserStore()).is_login.value
 }

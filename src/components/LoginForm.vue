@@ -1,27 +1,27 @@
-<script lang="ts" setup>
+<script setup lang="ts">
+import type { ValidatedError } from '@arco-design/web-vue/es/form/interface'
+import { IconLock, IconUser } from '@arco-design/web-vue/es/icon'
+import { storeToRefs } from 'pinia'
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-
-import type { ValidatedError } from '@arco-design/web-vue/es/form/interface'
-import { storeToRefs } from 'pinia'
-import {
-  IconLock,
-  IconUser,
-} from '@arco-design/web-vue/es/icon'
-import useUserStore from '../store/user'
+import type { LoginForm } from '../schema/user'
 import useAppStore from '../store/app'
+import useUserStore from '../store/user'
 
 const router = useRouter()
+const userStore = useUserStore()
+const appStore = useAppStore()
 const errorMessage = ref('')
-const { loading } = storeToRefs(useAppStore())
-const { setLoading } = useAppStore()
+
+const { loading } = storeToRefs(appStore)
+const { setLoading } = appStore
 
 const loginConfig = ref({
   rememberPassword: true,
   account: 'sakuya',
   password: 'ssr@129631',
 })
-const userInfo = reactive({
+const loginForm = reactive<LoginForm>({
   account: loginConfig.value.account,
   password: loginConfig.value.password,
 })
@@ -35,24 +35,30 @@ async function handleSubmit({
 }) {
   if (loading.value)
     return
-  if (!errors) {
-    setLoading(true)
-    try {
-      const { rememberPassword } = loginConfig.value
-      const { account, password } = values
-      loginConfig.value.account = rememberPassword ? account : ''
-      loginConfig.value.password = rememberPassword ? password : ''
-      await useUserStore().setLogin(account, password)
-      await router.push('/')
-    }
-    catch (err) {
-      errorMessage.value = (err as Error).message
-    }
-    finally {
-      setLoading(false)
-    }
+
+  if (errors)
+    return
+
+  setLoading(true)
+  try {
+    const { rememberPassword } = loginConfig.value
+    const {
+      account,
+      password,
+    } = values
+    loginConfig.value.account = rememberPassword ? account : ''
+    loginConfig.value.password = rememberPassword ? password : ''
+    await userStore.login(values as LoginForm)
+    await router.push('/')
+  }
+  catch (err) {
+    errorMessage.value = (err as Error).message
+  }
+  finally {
+    setLoading(false)
   }
 }
+
 function setRememberPassword(value: boolean) {
   loginConfig.value.rememberPassword = value
 }
@@ -69,38 +75,18 @@ function setRememberPassword(value: boolean) {
     <div class="login-form-error-msg">
       {{ errorMessage }}
     </div>
-    <a-form
-      :model="userInfo"
-      class="login-form"
-      layout="vertical"
-      @submit="handleSubmit"
-    >
-      <a-form-item
-        field="account"
-        :rules="[{ required: true, message: '请输入用户名' }]"
-        :validate-trigger="['change', 'blur']"
-        hide-label
-      >
-        <a-input
-          v-model="userInfo.account"
-          placeholder="用户名"
-        >
+    <a-form :model="loginForm" class="login-form" layout="vertical" @submit="handleSubmit">
+      <a-form-item field="account" :rules="[{ required: true, message: '请输入用户名' }]" :validate-trigger="['change', 'blur']"
+        hide-label>
+        <a-input v-model="loginForm.account" placeholder="用户名">
           <template #prefix>
             <IconUser />
           </template>
         </a-input>
       </a-form-item>
-      <a-form-item
-        field="password"
-        :rules="[{ required: true, message: '请输入密码' }]"
-        :validate-trigger="['change', 'blur']"
-        hide-label
-      >
-        <a-input-password
-          v-model="userInfo.password"
-          placeholder="密码"
-          allow-clear
-        >
+      <a-form-item field="password" :rules="[{ required: true, message: '请输入密码' }]" :validate-trigger="['change', 'blur']"
+        hide-label>
+        <a-input-password v-model="loginForm.password" placeholder="密码" allow-clear>
           <template #prefix>
             <IconLock />
           </template>
@@ -108,11 +94,8 @@ function setRememberPassword(value: boolean) {
       </a-form-item>
       <a-space :size="16" direction="vertical">
         <div class="login-form-password-actions">
-          <a-checkbox
-            checked="rememberPassword"
-            :model-value="loginConfig.rememberPassword"
-            @change="setRememberPassword as any"
-          >
+          <a-checkbox checked="rememberPassword" :model-value="loginConfig.rememberPassword"
+            @change="setRememberPassword as any">
             {{ '记住密码' }}
           </a-checkbox>
           <a-link>{{ '忘记密码' }}</a-link>

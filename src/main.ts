@@ -1,5 +1,7 @@
 import { createApp } from 'vue'
 import './style.css'
+
+// @ts-expect-error suppress type error beacuse of no type definition
 import { createRouter, createWebHistory } from 'vue-router/auto'
 import App from './App.vue'
 import { Guards } from './route'

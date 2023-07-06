@@ -1,33 +1,54 @@
 import { defineStore } from 'pinia'
-import { useStorage } from '@vueuse/core'
 import { Message } from '@arco-design/web-vue'
 import { base_url } from '../utils/config'
 import store from '.'
+import { LoginForm, UserState } from '../schema/user'
 
-const useUserStore = defineStore('user', {
-  state: () => {
+const useUserStore = defineStore({
+  id: 'user',
+  state: (): UserState => {
     return {
-      login: false,
-      role: '',
+      is_login: false,
+      token: "",
+      role: "guest",
+      _id: undefined,
+      account: undefined,
+      name: undefined,
+      sex: undefined,
+      phone: undefined,
+      department: undefined,
+      job_type: undefined,
+      avatar: undefined,
+      created_at: undefined,
+      updated_at: undefined
     }
   },
+  getters: {
+    userInfo(state: UserState): UserState {
+      return { ...state };
+    },
+  },
   actions: {
-    async setLogin(account: string, password: string) {
+    setInfo(info: Partial<UserState>) {
+      this.$patch(info);
+    },
+    resetInfo() {
+      this.$reset();
+    },
+    async login(loginForm: LoginForm) {
       const resp = await fetch(`${base_url}/login`, {
-        body: JSON.stringify({
-          account,
-          password,
-        }),
+        body: JSON.stringify(loginForm),
         headers: {
           'Content-Type': 'application/json',
         },
         method: 'POST',
       })
-      const data = await resp.json()
-      if (data.code === 20000) {
-        useStorage('token', data.data.token)
-        this.login = true
-        this.role = (JSON.parse(atob(data.data.token.split('.')[1]))).role
+      const payload = await resp.json()
+
+      if (payload.code === 20000) {
+        this.is_login = true
+        this.token = payload.data.token
+        this.role = payload.data.role
         Message.success('登录成功')
         return true
       }
@@ -36,6 +57,21 @@ const useUserStore = defineStore('user', {
         return false
       }
     },
+    async logout() {
+      this.resetInfo();
+    },
+    async info() {
+      const resp = await fetch(`${base_url}/user/info`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.token}`,
+        },
+      })
+      const payload = await resp.json()
+
+      this.setInfo(payload.data)
+    }
   },
 })
 

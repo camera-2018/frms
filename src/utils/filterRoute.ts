@@ -1,6 +1,6 @@
 import useUserStore from '../store/user'
 
-const menu_for_user = [
+const user_route = [
   {
     title: '我的报修',
     key: '/list',
@@ -21,7 +21,7 @@ const menu_for_user = [
   },
 ]
 
-const menu_for_administrator = [
+const admin_route = [
   {
     title: '任务委派',
     key: '/tasklist',
@@ -37,7 +37,7 @@ const menu_for_administrator = [
   },
 ]
 
-const menu_for_worker = [
+const worker_route = [
   {
     title: '我的维修',
     key: '/list',
@@ -53,13 +53,16 @@ const menu_for_worker = [
   },
 ]
 
-export function sendroute() {
-  if (useUserStore().role === 'admin')
-    return menu_for_administrator
-  if (useUserStore().role === 'user')
-    return menu_for_user
-  if (useUserStore().role === 'worker')
-    return menu_for_worker
-  else
-    return menu_for_user
+export function filterRoute() {
+  const role = useUserStore().role
+  switch (role) {
+    case 'admin':
+      return admin_route
+    case 'user':
+      return user_route
+    case 'worker':
+      return worker_route
+    default:
+      return []
+  }
 }
