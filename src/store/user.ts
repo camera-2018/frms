@@ -3,6 +3,7 @@ import { Message } from '@arco-design/web-vue'
 import { base_url } from '../utils/config'
 import store from '.'
 import { LoginForm, UserState } from '../schema/user'
+import { useDateFormat } from '@vueuse/core'
 
 const useUserStore = defineStore({
   id: 'user',
@@ -71,6 +72,8 @@ const useUserStore = defineStore({
       const payload = await resp.json()
 
       this.setInfo(payload.data.user_info)
+      this.created_at = useDateFormat(this.created_at, 'YYYY年MM月DD日 HH:mm:ss').value
+      this.updated_at = useDateFormat(this.updated_at, 'YYYY年MM月DD日 HH:mm:ss').value
     }
   },
 })
