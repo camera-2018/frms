@@ -1,27 +1,19 @@
-<script setup>
-import { reactive } from 'vue'
-import { useDateFormat, useStorage } from '@vueuse/core'
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useDateFormat } from '@vueuse/core'
 import { base_url } from '../../utils/config'
 import useUserStore from '../../store/user'
+import { useRouter } from 'vue-router';
+import { onMounted } from 'vue';
+import { Repair } from '../../schema/repair';
 
 const router = useRouter()
-async function res() {
-  const response = await fetch(`${base_url}/repairs`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${useStorage('token').value}`,
-    },
-  })
-  const data = (await response.json()).data
-  return data
-}
+const userStore = useUserStore()
 
-let repair_list = reactive([])
-
-repair_list = (await res()).repair_list.filter(repair => repair.status !== '待提交')
+const repair_list = ref<Array<Repair>>([])
 
 const color = {
+  待提交: '#000000',
   已评价: '#3ADC4A',
   未评价: '#D8B024',
   已下单: '#7C7D80',
@@ -39,41 +31,42 @@ const color = {
   未分配: '#FF0E0E',
 }
 
-function is_worker() {
-  return useUserStore().role === 'worker'
+function pushto(id: any) {
+  if (userStore.role === 'worker') {
+    router.push(`/order/${id}`)
+  }
+  else {
+    router.push(`/detail/${id}`)
+  }
+
 }
 
-function pushto(id) {
-  if (!is_worker())
-    router.push(`/detail/${id}`)
-  else
-    router.push(`/order/${id}`)
-}
+onMounted(async () => {
+  const resp = await fetch(`${base_url}/repairs`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${userStore.token}`,
+    },
+  })
+  const payload = await resp.json()
+  repair_list.value = payload.data.repair_list.filter((repair: Repair) => repair.status !== '待提交')
+})
 </script>
 
 <template>
-  <a-list hoverable="true">
+  <a-list :hoverable="true">
     <a-list-item class="list_title">
-      <a-list-item-meta
-        title="故障详情"
-        description="报修时间 报修地点"
-      />
+      <a-list-item-meta title="故障详情" description="报修时间 报修地点" />
       <template #actions>
         <div :style="{ color: '#7C7D80' }">
           报修状态
         </div>
       </template>
     </a-list-item>
-    <a-list-item
-      v-for="element in repair_list"
-      :key="element._id"
-      class="list_item"
-      @click="pushto(element._id)"
-    >
-      <a-list-item-meta
-        :title="element.detail"
-        :description="`${useDateFormat(element.updated_at, 'YYYY-MM-DD HH:mm:ss').value}    ${element.place}`"
-      />
+    <a-list-item v-for="element in repair_list" :key="element._id" class="list_item" @click="pushto(element._id)">
+      <a-list-item-meta :title="element.detail"
+        :description="`${useDateFormat(element.updated_at, 'YYYY-MM-DD HH:mm:ss').value}\t${element.place}`" />
       <template #actions>
         <div :style="{ color: color[element.status] }">
           {{ element.status }}
@@ -87,7 +80,16 @@ function pushto(id) {
 .list_item {
   @apply cursor-pointer;
 }
+
+.list_item:hover {
+  background-color: rgb(243 244 246)
+}
+
 .list_title {
-  @apply bg-blue-100 hover:bg-blue-100
+  background-color: rgb(186 230 253);
+}
+
+.list_title:hover {
+  background-color: rgb(186 230 253);
 }
 </style>

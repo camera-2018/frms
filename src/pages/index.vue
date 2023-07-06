@@ -86,16 +86,19 @@ onMounted(() => {
                   src="https://p1-arco.byteimg.com/tos-cn-i-uwbnlip3yd/3ee5f13fb09879ecb5185e440cef6eb9.png~tplv-uwbnlip3yd-webp.webp">
               </a-avatar>
               <a-dropdown>
-                <div class="cursor-pointer px-2 rounded hover:bg-gray-200 flex gap-x-1">
+                <div class="cursor-pointer px-2 rounded hover:bg-gray-200 flex gap-x-2">
                   <span class="text-bold">{{ userStore.name }}</span>
-                  <span class="text-gray-400">{{ userStore.account }}</span>
+                  <span class="text-gray-400">#{{ userStore.role }}</span>
                 </div>
                 <template #content>
                   <a-doption>
-                    <router-link to="/user/info">个人信息</router-link>
+                    <span class="text-gray-600">@{{ userStore.account }}</span>
                   </a-doption>
-                  <a-doption>
-                    <span @click="logout">退出登录</span>
+                  <a-doption @click="router.push('/user/info')">
+                    个人信息
+                  </a-doption>
+                  <a-doption @click="logout">
+                    退出登录
                   </a-doption>
                 </template>
               </a-dropdown>
