@@ -1,64 +1,29 @@
 <script setup>
 import { useRoute } from 'vue-router'
 import { reactive, ref } from 'vue'
-
-const data = {
-  report_info: {
-    repair_id: '3',
-    updated_at: '1688348336',
-    created_at: '1688348336',
-    comment: '条明构那入更家内地点图子人北列大。',
-    score: '5.36039',
-    result: '半委解化社装手加根做矿至价然效参式例。明北导所克飞水员进院步育空相适准。至主程象很边众矿合达深水利完已你层动。',
-    finish_time: '1688348336',
-    address: '从解出品太即至强劳之因干原上。',
-    request_time: '1688348336',
-    is_urgent: 'false',
-    worker_id: '4',
-    worker_name: '李明',
-    admin_id: '5',
-    user_id: '6',
-    detail: '局石易增细军力但据格民教场。',
-    type: '玻璃类',
-    assign_time: '1688348336',
-    status: '已下单',
-    id: '7',
-    account: 'Larry',
-    name: '韩杰',
-    sex: '女',
-    phone: '18191821238',
-    worker_phone: '18191821238',
-    department: '己',
-    role: 'admin',
-    estimated_cost: '0.0',
-    actual_cost: '0.0',
-    work_info: '已维修',
-  },
-  actual_info: 'cillum ut in',
-  estimate_info: 'dolore sint dolore',
-  assign_info: {
-    talkover: false,
-    acceptance: false,
-    evaluation: false,
-  },
-  comment_info: 'officia exercitation Ut sunt ea',
-  status: 'esse laboris cillum ea sunt',
-  created_at: '2015-01-13 07:41:26',
-  updated_at: '2020-04-29 13:30:05',
-}
+import { useStorage } from '@vueuse/core'
+import { base_url } from '../../../utils/config'
 
 const timing_rate = ref(0)
 const quality_rate = ref(0)
 const attitude_rate = ref(0)
-
+const repair_id = useRoute('/detail/[id]').params.id
+async function res() {
+  const response = await fetch(`${base_url}/repairs/${repair_id}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${useStorage('token').value}`,
+    },
+  })
+  const data = (await response.json()).data
+  return data
+}
+const data = reactive((await res()).repair_info)
+console.log(data)
 const consult = ref(false)
 
-const status = reactive({
-  checked: data.assign_info.talkover ? '已核对' : '未核对',
-  acceptance: data.assign_info.acceptance ? '已验收' : '未验收',
-  evaluation: data.assign_info.evaluation ? '已评价' : '未评价',
-  consult: consult.value ? '协商完成' : '协商中',
-})
+const { is_accept, is_assign, is_confirm, is_consult, is_pay, is_rate, is_repair, is_request } = data.repair_info.flags
 
 const label_order = [
   {
@@ -136,12 +101,12 @@ const label_accept = [
   },
 ]
 
-const res = label_order.map((element) => {
-  return {
-    label: element.label,
-    value: data.report_info[element.value],
-  }
-})
+// const res = label_order.map((element) => {
+//   return {
+//     label: element.label,
+//     value: data.report_info[element.value],
+//   }
+// })
 
 const talkover = label_talkover.map((element) => {
   return {
@@ -183,15 +148,15 @@ function evaluation() {
 
 function consultation() {
   consult.value = false
-  status.consult = '协商中'
+  status.is_consult = '协商中'
 }
 
 const id = useRoute().params.id
 
 function print() {
   if (consult.value)
-    status.consult = '协商完成'
-  else status.consult = '协商中'
+    status.is_consult = '协商完成'
+  else status.is_consult = '协商中'
 }
 </script>
 
@@ -210,10 +175,10 @@ function print() {
   </a-space>
   <a-space direction="vertical" :style="{ marginBottom: '15px' }" size="large" class="px-2">
     <a-card>
-      <div v-if="status.consult === '协商中' && status.checked === '未核对'" :style="{ color: color[(status.consult)] }" class="title">
-        {{ status.consult }}
+      <div v-if="status.is_consult === '协商中' && status.checked === '未核对'" :style="{ color: color[(status.is_consult)] }" class="title">
+        {{ status.is_consult }}
       </div>
-      <div v-else-if="status.consult === '协商完成' || status.checked === '已核对'" :style="{ color: color[(status.checked)] }" class="title">
+      <div v-else-if="status.is_consult === '协商完成' || status.checked === '已核对'" :style="{ color: color[(status.checked)] }" class="title">
         {{ status.checked }}
       </div>
       <a-descriptions :data="talkover" layout="inline-vertical" table-layout="fixed" column="4" align="left" />
@@ -230,10 +195,10 @@ function print() {
     </div>
     <a-space v-else>
       <a-card>
-        <div v-if="status.consult === '协商中' && status.acceptance === '未验收'" :style="{ color: color[(status.consult)] }" class="title">
-          {{ status.consult }}
+        <div v-if="status.is_consult === '协商中' && status.acceptance === '未验收'" :style="{ color: color[(status.is_consult)] }" class="title">
+          {{ status.is_consult }}
         </div>
-        <div v-else-if="status.consult === '协商完成' || status.acceptance === '已验收'" :style="{ color: color[(status.acceptance)] }" class="title">
+        <div v-else-if="status.is_consult === '协商完成' || status.acceptance === '已验收'" :style="{ color: color[(status.acceptance)] }" class="title">
           {{ status.acceptance }}
         </div>
         <a-descriptions :data="accept" layout="inline-vertical" table-layout="fixed" column="4" align="left" />

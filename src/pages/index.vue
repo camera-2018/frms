@@ -100,7 +100,9 @@ const showcheck = ref(true)
           </a-breadcrumb-item>
         </a-breadcrumb>
         <a-layout-content>
-          <router-view />
+          <Suspense>
+            <router-view />
+          </Suspense>
           <div v-if="route.path === '/'" class="check_browser">
             <a-result :status="null" title="欢迎使用设施报修管理系统" subtitle="请点击左侧导航栏开始使用">
               <template #icon>

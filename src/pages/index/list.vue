@@ -1,51 +1,39 @@
 <script setup>
-import { ref } from 'vue'
+import { reactive, ref } from 'vue'
+import { useDateFormat, useStorage } from '@vueuse/core'
+import { base_url } from '../../utils/config'
 
 const router = useRouter()
-const res = [
-  {
-    title: '厕所灯泡不亮',
-    description: '2022-04-01 杭州电子科技大学下沙生活区11号楼北517',
-    status: '已评价',
-    id: 1,
-  },
-  {
-    title: '厕所喷头掉落',
-    description: '2022-04-01 杭州电子科技大学下沙生活区11号楼北517',
-    status: '未评价',
-    id: 2,
-  },
-  {
-    title: '空调制冷出问题',
-    description: '2022-04-01 杭州电子科技大学下沙生活区11号楼北517',
-    status: '未验收',
-    id: 3,
-  },
-  {
-    title: '厕所门把手脱落',
-    description: '2022-04-01 杭州电子科技大学下沙生活区11号楼北517',
-    status: '未验收',
-    id: 4,
-  },
-  {
-    title: '寝室门锁损坏',
-    description: '2022-04-01 杭州电子科技大学下沙生活区11号楼北517',
-    status: '未核对',
-    id: 5,
-  },
-  {
-    title: '救救孩子，黑龙五猫',
-    description: '2022-07-02 杭州电子科技大学下沙生活区11号楼北602',
-    status: '已下单',
-    id: 6,
-  },
-]
+async function res() {
+  const response = await fetch(`${base_url}/repairs`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${useStorage('token').value}`,
+    },
+  })
+  const data = (await response.json()).data
+  return data
+}
+
+let repair_list = reactive([])
+
+repair_list = (await res()).repair_list
 const color = {
   已评价: '#3ADC4A',
   未评价: '#D8B024',
   已下单: '#7C7D80',
   未验收: '#FF0E0E',
   未核对: '#D8B024',
+  已完成: '#000000',
+  待派单: '#7C7D80',
+  待提交: '#D8B024',
+  待接单: '#7C7D80',
+  待协商: '#FF9800',
+  维修中: '#2196F3',
+  待验收: '#FF0E0E',
+  待支付: '#9C27B0',
+  待评价: '#D8B024',
 }
 
 const is_worker = ref(false)
@@ -70,10 +58,10 @@ function pushto(id) {
         </div>
       </template>
     </a-list-item>
-    <a-list-item v-for="element in res" :key="element.title" class="list_item" @click="pushto(element.id)">
+    <a-list-item v-for="element in repair_list" :key="element.__id" class="list_item" @click="pushto(element._id)">
       <a-list-item-meta
-        :title="element.title"
-        :description="element.description"
+        :title="element.detail"
+        :description="`${useDateFormat(element.updated_at, 'YYYY-MM-DD HH:mm:ss').value}    ${element.place}`"
       />
       <template #actions>
         <div :style="{ color: color[element.status] }">

@@ -1,24 +1,49 @@
 <script setup>
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useDateFormat, useNow } from '@vueuse/core'
+import { useStorage } from '@vueuse/core'
+import { base_url } from '../../utils/config'
 
 const router = useRouter()
 
 const current = ref(1)
 
-const isCommit = ref(false)
-
 const form = reactive({
   type: '',
-  radio: '否',
+  is_urgent: false,
   detail: '',
-  workplace: '',
-  time: useDateFormat(useNow(), 'YYYY-MM-DD HH:mm:ss').value,
+  place: '',
+  attachment: [],
 })
+async function res() {
+  const response = await fetch(`${base_url}/repairs`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${useStorage('token').value}`,
+    },
+  })
+  const data = (await response.json()).data
+  return data
+}
+const repair_id = reactive((await res()).repair_info._id)
 
-function handleSubmit({ values, errors }) {
-  console.log(values.value, errors)
+async function res1() {
+  const response = await fetch(`${base_url}/request/${repair_id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${useStorage('token').value}`,
+    },
+    body: JSON.stringify(form),
+  })
+  const data = (await response.json()).data
+  return data
+}
+
+const isCommit = ref(false)
+
+async function handleSubmit({ values, errors }) {
+  await res1()
   if (!errors)
     current.value = 2
   else
@@ -35,13 +60,17 @@ function setCurrent(new_current) {
 
 function onReset() {
   form.type = ''
-  form.radio = '否'
+  form.is_urgent = false
   form.detail = ''
-  form.workplace = ''
+  form.place = ''
 }
 
 function onPost() {
   router.push('/list')
+}
+
+function onsuccess(fileItem) {
+  form.attachment.push(fileItem.response.data.url)
 }
 </script>
 
@@ -59,13 +88,13 @@ function onPost() {
     </div>
     <div class="m-form">
       <div v-if="current === 1">
-        <a-form ref="formRef" size="large" :model="form" :style="{ width: '600px' }" @submit="handleSubmit">
-          <a-form-item field="radio" label="是否加急" :rules="[{ required: true, message: '必须选择是否加急' }]">
-            <a-radio-group v-model="form.radio">
-              <a-radio value="是">
+        <a-form size="large" :model="form" :style="{ width: '600px' }" @submit="handleSubmit">
+          <a-form-item field="is_urgent" label="是否加急" :rules="[{ required: true, message: '必须选择是否加急' }]">
+            <a-radio-group v-model="form.is_urgent">
+              <a-radio :value="true">
                 是
               </a-radio>
-              <a-radio value="否">
+              <a-radio :value="false">
                 否
               </a-radio>
             </a-radio-group>
@@ -86,11 +115,11 @@ function onPost() {
           <a-form-item field="detail" label="故障详情" :rules="[{ required: true, message: '必须输入故障详情' }]">
             <a-input v-model="form.detail" placeholder="请输入故障详情..." />
           </a-form-item>
-          <a-form-item field="workplace" label="维修地点" :rules="[{ required: true, message: '必须输入维修地点' }]">
-            <a-input v-model="form.workplace" placeholder="请输入维修地点..." />
+          <a-form-item field="place" label="维修地点" :rules="[{ required: true, message: '必须输入维修地点' }]">
+            <a-input v-model="form.place" placeholder="请输入维修地点..." />
           </a-form-item>
-          <a-form-item field="img" label="图片">
-            <a-upload draggable action="/" list-type="picture" image-preview :limit="5" tip="可以上传PNG、JPG等格式的图片，最大限制5张50M" />
+          <a-form-item field="attachment" label="图片">
+            <a-upload draggable :action="`${base_url}/upload`" list-type="picture" image-preview :limit="5" tip="可以上传PNG、JPG等格式的图片，最大限制5张50M" @success="onsuccess" />
           </a-form-item>
           <a-form-item>
             <a-space>
@@ -123,13 +152,10 @@ function onPost() {
               {{ form.detail }}
             </a-descriptions-item>
             <a-descriptions-item label="是否加急">
-              {{ form.radio }}
+              {{ form.is_urgent }}
             </a-descriptions-item>
             <a-descriptions-item label="维修地点">
-              {{ form.workplace }}
-            </a-descriptions-item>
-            <a-descriptions-item label="保修时间">
-              {{ form.time }}
+              {{ form.place }}
             </a-descriptions-item>
           </a-descriptions>
         </div>
