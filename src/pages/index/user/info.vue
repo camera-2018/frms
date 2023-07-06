@@ -11,7 +11,7 @@ const { account, name, sex, phone, department, job_type, role, created_at, updat
 
 <template>
   <div class="flex flex-col justify-center items-center mt-[80px] gap-y-4 text-black">
-    <div class="text-xl text-center text-bold">个人信息</div>
+    <div class="text-xl text-center font-bold">个人信息</div>
     <div class="flex items-center justify-center gap-x-4">
       <a-descriptions size="large" label="User Info" :column="1">
         <a-descriptions-item label="用户账号">

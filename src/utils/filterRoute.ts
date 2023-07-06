@@ -28,7 +28,7 @@ const user_route = [
 const admin_route = [
   {
     title: '任务委派',
-    key: '/tasklist',
+    key: '/list',
     sub: [],
   },
   {

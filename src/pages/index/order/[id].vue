@@ -1,18 +1,21 @@
-<script setup>
+<script setup lang="ts">
 import { useRoute, useRouter } from 'vue-router'
 import { reactive, ref } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { IconDelete, IconPlus } from '@arco-design/web-vue/es/icon'
 import { base_url } from '../../../utils/config'
+import useUserStore from '../../../store/user'
 
 const repair_id = useRoute('/order/[id]').params.id
 const router = useRouter()
+const userStore = useUserStore()
+
 async function res_list() {
   const response = await fetch(`${base_url}/repairs/${repair_id}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${useStorage('token').value}`,
+      'Authorization': `Bearer ${userStore.token}`,
     },
   })
   const data = (await response.json()).data
@@ -25,7 +28,7 @@ async function user() {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${useStorage('token').value}`,
+      'Authorization': `Bearer ${userStore.token}`,
     },
   })
   const data = (await response.json()).data

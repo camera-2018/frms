@@ -1,17 +1,19 @@
-<script setup>
+<script setup lang="ts">
 import { useRoute, useRouter } from 'vue-router'
 import { reactive, ref } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { base_url } from '../../../utils/config'
+import useUserStore from '../../../store/user';
 
 const repair_id = useRoute('/detail/[id]').params.id
 const router = useRouter()
+const userStore = useUserStore()
 async function res_list() {
   const response = await fetch(`${base_url}/repairs/${repair_id}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${useStorage('token').value}`,
+      'Authorization': `Bearer ${userStore.token}`,
     },
   })
   const data = (await response.json()).data
@@ -26,7 +28,7 @@ async function res_user() {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${useStorage('token').value}`,
+      'Authorization': `Bearer ${userStore.token}`,
     },
   })
   const data = (await response.json()).data
@@ -221,12 +223,7 @@ const color = {
       <a-space v-if="data.attachment.length !== 0" class="px-5">
         <div>报修图片</div>
         <a-image-preview-group infinite>
-          <a-image
-            v-for="i in data.attachment"
-            :key="i"
-            width="200"
-            :src="i[0] === 'u' ? `${base_url}/${i}` : i"
-          />
+          <a-image v-for="i in data.attachment" :key="i" width="200" :src="i[0] === 'u' ? `${base_url}/${i}` : i" />
         </a-image-preview-group>
       </a-space>
     </a-card>
@@ -239,17 +236,13 @@ const color = {
       <div v-else-if="data.step > 4" :style="{ color: color['已协商'] }" class="title">
         已协商
       </div>
-      <a-descriptions v-if="data.step >= 4" :data="talkover" layout="inline-vertical" table-layout="fixed" column="4" align="left" />
+      <a-descriptions v-if="data.step >= 4" :data="talkover" layout="inline-vertical" table-layout="fixed" column="4"
+        align="left" />
       <br>
       <a-space v-if="data.attachment.length !== 0" class="px-5">
         <div>报修图片</div>
         <a-image-preview-group infinite>
-          <a-image
-            v-for="i in data.attachment"
-            :key="i"
-            width="200"
-            :src="i[0] === 'u' ? `${base_url}/${i}` : i"
-          />
+          <a-image v-for="i in data.attachment" :key="i" width="200" :src="i[0] === 'u' ? `${base_url}/${i}` : i" />
         </a-image-preview-group>
       </a-space>
       <div class="flex flex-col px-5 mt-2 gap-y-2">
@@ -259,20 +252,22 @@ const color = {
     </a-card>
   </a-space>
   <div :style="{ marginBottom: '15px' }" class="px-2">
-    <div v-if="data.step === 4 " class="flex gap-x-3 justify-end">
+    <div v-if="data.step === 4" class="flex gap-x-3 justify-end">
       <a-button type="primary" @click="confirm()">
         确认
       </a-button>
     </div>
     <a-space v-else-if="data.step > 4">
       <a-card>
-        <div v-if="data.step === 5 || data.step === 6 || data.step === 7" :style="{ color: color[(data.status)] }" class="title">
+        <div v-if="data.step === 5 || data.step === 6 || data.step === 7" :style="{ color: color[(data.status)] }"
+          class="title">
           {{ data.status }}
         </div>
-        <div v-if="data.step > 7 " :style="{ color: color['已支付'] }" class="title">
+        <div v-if="data.step > 7" :style="{ color: color['已支付'] }" class="title">
           已支付
         </div>
-        <a-descriptions v-if=" data.step >= 6" :data="accept" layout="inline-vertical" table-layout="fixed" column="4" align="left" />
+        <a-descriptions v-if="data.step >= 6" :data="accept" layout="inline-vertical" table-layout="fixed" column="4"
+          align="left" />
         <a-descriptions layout="inline-vertical">
           <a-descriptions-item label="完工说明">
             {{ data.comment }}
@@ -282,12 +277,7 @@ const color = {
         <a-space v-if="data.attachment.length !== 0" class="px-5">
           <div>报修图片</div>
           <a-image-preview-group infinite>
-            <a-image
-              v-for="i in data.attachment"
-              :key="i"
-              width="200"
-              :src="i[0] === 'u' ? `${base_url}/${i}` : i"
-            />
+            <a-image v-for="i in data.attachment" :key="i" width="200" :src="i[0] === 'u' ? `${base_url}/${i}` : i" />
           </a-image-preview-group>
         </a-space>
         <div class="flex flex-col px-5 mt-2 gap-y-2">
@@ -344,7 +334,7 @@ const color = {
   @apply px-[20px];
 }
 
-.title{
+.title {
   @apply text-[16px];
   padding-bottom: 10px;
   padding-left: 20px;

@@ -50,7 +50,7 @@ function onProgress(currentFile) {
 
 <template>
   <div class="self-center text-black my-20">
-    <div class="text-xl text-center text-bold mb-8">修改个人信息</div>
+    <div class="text-xl text-center font-bold mb-8">修改个人信息</div>
     <a-form size="large" :model="form" :style="{ width: '500px' }" @submit-success="handleSubmit">
       <a-form-item field="name" label="姓名" :rules="[{ required: true, message: '必须输入姓名' }]">
         <a-input v-model="form.name" placeholder="请输入新的姓名" />

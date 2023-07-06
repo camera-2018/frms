@@ -6,11 +6,80 @@ import useUserStore from '../../store/user'
 import { useRouter } from 'vue-router';
 import { onMounted } from 'vue';
 import { Repair } from '../../schema/repair';
+import { storeToRefs } from 'pinia';
+import type { Worker } from '../../schema/user'
+import { Message } from '@arco-design/web-vue';
 
 const router = useRouter()
 const userStore = useUserStore()
+const { role } = storeToRefs(userStore)
 
 const repair_list = ref<Array<Repair>>([])
+const worker_list = ref<Array<Worker>>([])
+const modalVis = ref(false)
+const repair_id = ref()
+const worker_id = ref('')
+
+
+function pushto(id: any) {
+  if (userStore.role === 'worker') {
+    router.push(`/order/${id}`)
+  }
+  else {
+    router.push(`/detail/${id}`)
+  }
+
+}
+
+async function fetchList(){
+  const resp = await fetch(`${base_url}/repairs`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${userStore.token}`,
+    },
+  })
+  const payload = await resp.json()
+  repair_list.value = payload.data.repair_list.filter((repair: Repair) => repair.status !== '待提交')
+}
+
+async function showAssignModal(id: string) {
+  const resp = await fetch(`${base_url}/workers`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${userStore.token}`,
+    },
+  })
+  const payload = await resp.json()
+  worker_list.value = payload.data.worker_list
+
+  repair_id.value = id
+  worker_id.value = ''
+  modalVis.value = true
+}
+
+async function assignWorker() {
+  if (worker_id.value === '') {
+    Message.info('请选择维修人员')
+    return
+  }
+  await fetch(`${base_url}/assign/${repair_id.value}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${userStore.token}`,
+    },
+    body: JSON.stringify({
+      worker_id: worker_id.value,
+    }),
+  })
+
+  await fetchList()
+
+  Message.success('分配成功')
+  modalVis.value = false
+}
 
 const color = {
   待提交: '#000000',
@@ -31,49 +100,76 @@ const color = {
   未分配: '#FF0E0E',
 }
 
-function pushto(id: any) {
-  if (userStore.role === 'worker') {
-    router.push(`/order/${id}`)
-  }
-  else {
-    router.push(`/detail/${id}`)
-  }
-
-}
-
 onMounted(async () => {
-  const resp = await fetch(`${base_url}/repairs`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${userStore.token}`,
-    },
-  })
-  const payload = await resp.json()
-  repair_list.value = payload.data.repair_list.filter((repair: Repair) => repair.status !== '待提交')
+  await fetchList()
 })
 </script>
 
 <template>
   <a-list :hoverable="true">
-    <a-list-item class="list_title">
-      <a-list-item-meta title="故障详情" description="报修时间 报修地点" />
-      <template #actions>
-        <div :style="{ color: '#7C7D80' }">
-          报修状态
+    <template #header>
+      <div class="flex items-center">
+        <div class="flex-grow">
+          <div>故障详情</div>
+          <div class="text-sm text-gray-500 flex gap-x-2">
+            <span>报修时间</span>
+            <span>报修地点</span>
+          </div>
         </div>
-      </template>
-    </a-list-item>
-    <a-list-item v-for="element in repair_list" :key="element._id" class="list_item" @click="pushto(element._id)">
+        <div class="flex gap-x-2">
+          这里有什么编表头的必要吗？
+        </div>
+      </div>
+    </template>
+    <a-list-item v-for="element in repair_list" :key="element._id" class="list_item">
       <a-list-item-meta :title="element.detail"
         :description="`${useDateFormat(element.updated_at, 'YYYY-MM-DD HH:mm:ss').value}\t${element.place}`" />
       <template #actions>
-        <div :style="{ color: color[element.status] }">
-          {{ element.status }}
+        <div class="flex items-center gap-x-6">
+          <a-tag :color="color[element.status]">
+            {{ element.status }}
+          </a-tag>
+          <div class="flex items-center gap-x-2">
+            <a-button type="primary" @click="showAssignModal(element._id)" v-if="role === 'admin'">
+              派单
+            </a-button>
+            <a-button @click="pushto(element._id)">
+              查看详情
+            </a-button>
+          </div>
         </div>
       </template>
     </a-list-item>
   </a-list>
+  <a-modal :visible="modalVis" @cancel="modalVis = false">
+    <template #title>
+      <div class="flex items-center flex-grow gap-x-2">
+        <span>分配维修人员</span>
+        <span class="text-sm text-gray-400">报修单{{ repair_id }}</span>
+      </div>
+    </template>
+    <template #footer>
+      <div class="flex gap-x-2 flex-grow justify-end">
+        <a-button type="secondary" @click="modalVis = false">
+          取消
+        </a-button>
+        <a-button type="primary" @click="assignWorker">
+          确认
+        </a-button>
+      </div>
+    </template>
+    <div>
+      <a-radio-group v-model="worker_id">
+        <a-radio v-for="worker in worker_list" :value="worker._id">
+          <div>
+            <span>{{ worker.job_type }} {{ worker.name }}({{ worker.sex }})</span>
+            &nbsp;
+            <span class="text-xs text-gray-400">{{ worker._id }}</span>
+          </div>
+        </a-radio>
+      </a-radio-group>
+    </div>
+  </a-modal>
 </template>
 
 <style scoped>

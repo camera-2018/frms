@@ -1,16 +1,19 @@
-<script setup>
+<script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { useDateFormat, useStorage } from '@vueuse/core'
 import { base_url } from '../../utils/config'
+import useUserStore from '../../store/user';
+import { useRouter } from 'vue-router';
 
 const router = useRouter()
+const userStore = useUserStore()
 const worker_id = ref('')
 async function res() {
   const response = await fetch(`${base_url}/repairs`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${useStorage('token').value}`,
+      'Authorization': `Bearer ${userStore.token}`,
     },
   })
   const data = (await response.json()).data
@@ -22,7 +25,7 @@ async function res_worker() {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${useStorage('token').value}`,
+      'Authorization': `Bearer ${userStore.token}`,
     },
   })
   const data = (await response.json()).data

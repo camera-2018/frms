@@ -35,3 +35,24 @@ export interface UserInfoUpdateForm {
   job_type: JobType,
   avatar: string
 }
+
+export interface User {
+  _id: string
+  account: string
+  name: string
+  sex: string
+  phone: string
+  department: string
+  job_type: JobType,
+  avatar: string
+  created_at: string
+  updated_at: string
+}
+
+export interface Worker {
+  _id: string
+  name: string
+  sex: string
+  phone: string
+  job_type: JobType
+}
