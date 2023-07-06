@@ -1,9 +1,10 @@
 <script setup>
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { useDateFormat, useStorage } from '@vueuse/core'
 import { base_url } from '../../utils/config'
 
 const router = useRouter()
+const worker_id = ref('')
 async function res() {
   const response = await fetch(`${base_url}/repairs`, {
     method: 'GET',
@@ -16,70 +17,145 @@ async function res() {
   return data
 }
 
-let repair_list = reactive([])
-
-repair_list = (await res()).repair_list.filter(repair => repair.status === '待派单')
-
-const color = {
-  已评价: '#3ADC4A',
-  未评价: '#D8B024',
-  已下单: '#7C7D80',
-  未验收: '#FF0E0E',
-  未核对: '#D8B024',
-  已完成: '#000000',
-  待派单: '#7C7D80',
-  待接单: '#7C7D80',
-  待协商: '#FF9800',
-  维修中: '#2196F3',
-  待验收: '#FF0E0E',
-  待支付: '#9C27B0',
-  待评价: '#D8B024',
-  已分配: '#3ADC4A',
-  未分配: '#FF0E0E',
+async function res_worker() {
+  const response = await fetch(`${base_url}/workers`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${useStorage('token').value}`,
+    },
+  })
+  const data = (await response.json()).data
+  return data
 }
 
-async function pushto(id) {
-  await router.push(`/task/${id}`)
+let repair_list = reactive([])
+repair_list = (await res()).repair_list
+
+const workers = reactive(await res_worker()).worker_list
+
+const assign_id = ref('')
+const pick_up_modal = ref(false)
+const checkedValue = ref()
+
+const color = {
+  待接单: '#D8B024',
+  待协商: '#D8B024',
+  维修中: '#D8B024',
+  待验收: '#D8B024',
+  待支付: '#D8B024',
+  待评价: '#D8B024',
+  已完成: '#3ADC4A',
+  待派单: '#FF0E0E',
+}
+
+function pushto(id) {
+  router.push(`/detail/${id}`)
+}
+
+function assign(id) {
+  assign_id.value = id
+  pick_up_modal.value = true
+}
+
+async function assign_it() {
+  const response = await fetch(`${base_url}/assign/${assign_id.value}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${useStorage('token').value}`,
+    },
+    body: JSON.stringify({
+      worker_id: worker_id.value,
+    }),
+  })
+  const data = (await response.json()).data
+  return data
+}
+
+const check = ref()
+
+function assign_confirm() {
+  if (worker_id.value === '')
+    return
+
+  assign_it()
+  pick_up_modal.value = false
+  worker_id.value = ''
 }
 </script>
 
 <template>
-  <a-list hoverable="true">
-    <a-list-item class="list_title">
+  <a-list>
+    <a-list-item>
       <a-list-item-meta
         title="故障详情"
-        description="报修时间 报修地点"
+        description="报修单号 报修时间 报修地点"
       />
       <template #actions>
         <div :style="{ color: '#7C7D80' }">
           报修状态
         </div>
+        <div :style="{ color: '#7C7D80' }">
+          安排维修人员
+        </div>
+        <div :style="{ color: '#7C7D80' }">
+          查看流程
+        </div>
       </template>
     </a-list-item>
-    <a-list-item
-      v-for="element in repair_list"
-      :key="element._id"
-      class="list_item"
-      @click="pushto(element._id)"
-    >
+    <a-list-item v-for="element in repair_list" :key="element.__id" class="list_item" hoverable>
       <a-list-item-meta
         :title="element.detail"
-        :description="`${useDateFormat(element.updated_at, 'YYYY-MM-DD HH:mm:ss').value}    ${element.place}`"
+        :description="`${element._id}   ${useDateFormat(element.updated_at, 'YYYY-MM-DD HH:mm:ss').value}    ${element.place}`"
       />
       <template #actions>
-        <div :style="{ color: color[element.status] }">
+        <div :style="{ color: color[element.status] }" class="items-center">
           {{ element.status }}
+        </div>
+        <div>
+          <a-button type="primary" @click="assign(element._id)">
+            安排
+          </a-button>
+        </div>
+        <div>
+          <a-button @click="pushto(element._id)">
+            查看
+          </a-button>
         </div>
       </template>
     </a-list-item>
   </a-list>
+  <a-modal :visible="pick_up_modal" @cancel="pick_up_modal = false">
+    <template #title>
+      <div class="flex flex-grow text-base font-semibold">
+        <div>分配维修人员</div>
+      </div>
+    </template>
+    <template #footer>
+      <div class="flex gap-x-2 flex-grow justify-end">
+        <a-button type="secondary" @click="pick_up_modal = false">
+          取消
+        </a-button>
+        <a-button type="primary" @click="assign_confirm">
+          确认
+        </a-button>
+      </div>
+    </template>
+    <div>
+      <a-radio-group v-model="worker_id">
+        <a-radio v-for="worker in workers" :value="worker._id">
+          <div>
+            {{ `${worker.job_type}-${worker._id}-${worker.name}` }}
+          </div>
+        </a-radio>
+      </a-radio-group>
+    </div>
+  </a-modal>
 </template>
 
 <style scoped>
 .list_item {
   @apply cursor-pointer;
-}
-.list_title {
-  @apply bg-blue-100 hover:bg-blue-100
 }
 </style>
