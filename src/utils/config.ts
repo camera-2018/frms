@@ -1,1 +1,1 @@
-export const base_url = 'http://10.253.42.96:3000'
+export const base_url = 'https://api.irain.cc:4101/frms'
