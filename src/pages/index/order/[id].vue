@@ -48,8 +48,7 @@ async function acceptance() {
   const response = await fetch(`${base_url}/accept/${repair_id}`, {
     method: 'PATCH',
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${useStorage('token').value}`,
+      Authorization: `Bearer ${useStorage('token').value}`,
     },
   })
   const data = (await response.json()).data
