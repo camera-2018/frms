@@ -1,7 +1,8 @@
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive } from 'vue'
 import { useDateFormat, useStorage } from '@vueuse/core'
 import { base_url } from '../../utils/config'
+import useUserStore from '../../store/user'
 
 const router = useRouter()
 async function res() {
@@ -36,9 +37,12 @@ const color = {
   待评价: '#D8B024',
 }
 
-const is_worker = ref(false)
+function is_worker() {
+  return useUserStore().role === 'worker'
+}
+
 function pushto(id) {
-  if (!is_worker.value)
+  if (!is_worker())
     router.push(`/detail/${id}`)
   else
     router.push(`/order/${id}`)

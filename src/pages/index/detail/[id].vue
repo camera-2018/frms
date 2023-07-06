@@ -4,11 +4,9 @@ import { reactive, ref } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { base_url } from '../../../utils/config'
 
-const timing_rate = ref(0)
-const quality_rate = ref(0)
-const attitude_rate = ref(0)
 const repair_id = useRoute('/detail/[id]').params.id
-async function res() {
+
+async function res_list() {
   const response = await fetch(`${base_url}/repairs/${repair_id}`, {
     method: 'GET',
     headers: {
@@ -19,12 +17,92 @@ async function res() {
   const data = (await response.json()).data
   return data
 }
-const data = reactive((await res()).repair_info)
-console.log(data)
-const consult = ref(false)
+const data = reactive((await res_list()).repair_info)
+// console.log(data)
 
-const { is_accept, is_assign, is_confirm, is_consult, is_pay, is_rate, is_repair, is_request } = data.repair_info.flags
+const { is_accept, is_assign, is_confirm, is_consult, is_pay, is_rate, is_repair, is_request } = data.flags
 
+async function res_user() {
+  const response = await fetch(`${base_url}/user/info`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${useStorage('token').value}`,
+    },
+  })
+  const data = (await response.json()).data
+  return data
+}
+const user_data = reactive((await res_user()).user_info)
+
+data.name = user_data.name
+data.phone = user_data.phone
+data.department = user_data.department
+data.is_urgent = data.is_urgent ? '是' : '否'
+data.is_free = data.is_free ? '是' : '否'
+const rate = ref(data.rate)
+const comment = ref(data.comment)
+const transformedArray_estimate = data.estimate_receipt.map(item => `${item.key}-${item.value}`)
+const transformedArray_actual = data.actual_receipt.map(item => `${item.key}-${item.value}`)
+
+async function consult() {
+  const response = await fetch(`${base_url}/consult/${repair_id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${useStorage('token').value}`,
+    },
+  })
+  const data = (await response.json()).data
+  return data
+}
+async function last_consult() {
+  const response = await fetch(`${base_url}/confirm/${repair_id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${useStorage('token').value}`,
+    },
+  })
+  const data = (await response.json()).data
+  return data
+}
+
+async function pay() {
+  const response = await fetch(`${base_url}/pay/${repair_id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${useStorage('token').value}`,
+    },
+  })
+  const data = (await response.json()).data
+  return data
+}
+
+async function rate_comment() {
+  const response = await fetch(`${base_url}/rate/${repair_id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${useStorage('token').value}`,
+    },
+    body: JSON.stringify({
+      rate,
+      comment,
+    }),
+  })
+  const data = (await response.json()).data
+  return data
+}
+
+function confirm() {
+  consult()
+}
+
+function last_confirm() {
+  last_consult()
+}
 const label_order = [
   {
     label: '报修人姓名',
@@ -40,7 +118,7 @@ const label_order = [
   },
   {
     label: '报修地址',
-    value: 'address',
+    value: 'place',
   },
   {
     label: '报修项目',
@@ -61,39 +139,27 @@ const label_talkover = [
     value: 'admin_id',
   },
   {
-    label: '联系电话',
-    value: 'worker_phone',
-  },
-  {
-    label: '维修人',
-    value: 'worker_name',
-  },
-  {
-    label: '工号',
+    label: '工作人员ID',
     value: 'worker_id',
   },
   {
     label: '费用预估',
-    value: 'estimated_cost',
+    value: 'estimate_cost',
   },
 ]
 
 const label_accept = [
   {
-    label: '支付方式',
-    value: '线上支付',
-  },
-  {
     label: '完工人员',
-    value: 'worker_name',
-  },
-  {
-    label: '工号',
     value: 'worker_id',
   },
   {
-    label: '完工说明',
-    value: 'work_info',
+    label: '完工时间',
+    value: 'finish_at',
+  },
+  {
+    label: '是否免费',
+    value: 'is_free',
   },
   {
     label: '实际费用',
@@ -101,137 +167,128 @@ const label_accept = [
   },
 ]
 
-// const res = label_order.map((element) => {
-//   return {
-//     label: element.label,
-//     value: data.report_info[element.value],
-//   }
-// })
+const order = label_order.map((element) => {
+  return {
+    label: element.label,
+    value: data[element.value],
+  }
+})
 
 const talkover = label_talkover.map((element) => {
   return {
     label: element.label,
-    value: data.report_info[element.value],
+    value: data[element.value],
   }
 })
 
 const accept = label_accept.map((element) => {
   return {
     label: element.label,
-    value: data.report_info[element.value],
+    value: data[element.value],
   }
 })
 
 const color = {
-  已评价: '#3ADC4A',
-  未评价: '#D8B024',
-  已下单: '#7C7D80',
-  未验收: '#FF0E0E',
-  已验收: '#3ADC4A',
-  未核对: '#FF0E0E',
-  已核对: '#3ADC4A',
-  协商中: '#D8B024',
-}
-
-function verify() {
-  status.checked = '已核对'
-}
-
-function acceptance() {
-  status.acceptance = '已验收'
-}
-
-function evaluation() {
-  if (timing_rate.value > 0 && quality_rate.value > 0 && attitude_rate.value > 0)
-    status.evaluation = '已评价'
-}
-
-function consultation() {
-  consult.value = false
-  status.is_consult = '协商中'
-}
-
-const id = useRoute().params.id
-
-function print() {
-  if (consult.value)
-    status.is_consult = '协商完成'
-  else status.is_consult = '协商中'
+  待派单: '#7C7D80',
+  待接单: '#7C7D80',
+  已下单: '#3ADC4A',
+  待协商: '#D8B024',
+  已协商: '#3ADC4A',
+  维修中: '#7C7D80',
+  待验收: '#D8B024',
+  待支付: '#D8B024',
+  已支付: '#3ADC4A',
+  待评价: '#D8B024',
+  已完成: '#3ADC4A',
 }
 </script>
 
 <template>
-  <div class="text-black">
-    是否完成协商
-    <a-switch v-model="consult" @click="print" />
-  </div>
   <a-space direction="vertical" size="large" class="px-2" :style="{ marginBottom: '15px' }">
     <a-card>
-      <div :style="{ color: color[data.report_info.status] }" class="title">
-        {{ data.report_info.status }}
+      <div v-if="data.step <= 2" :style="{ color: color[data.status] }" class="title">
+        {{ data.status }}
       </div>
-      <a-descriptions :data="res" layout="inline-vertical" table-layout="fixed" column="4" align="left" />
+      <div v-else-if="data.step > 2" :style="{ color: color['已下单'] }" class="title">
+        已下单
+      </div>
+      <a-descriptions :data="order" layout="inline-vertical" table-layout="fixed" column="4" align="left" />
     </a-card>
   </a-space>
-  <a-space direction="vertical" :style="{ marginBottom: '15px' }" size="large" class="px-2">
+  <a-space v-if="data.step > 2" direction="vertical" :style="{ marginBottom: '15px' }" size="large" class="px-2">
     <a-card>
-      <div v-if="status.is_consult === '协商中' && status.checked === '未核对'" :style="{ color: color[(status.is_consult)] }" class="title">
-        {{ status.is_consult }}
+      <div v-if="data.step === 3 || data.step === 4" :style="{ color: color[(data.status)] }" class="title">
+        {{ data.status }}
       </div>
-      <div v-else-if="status.is_consult === '协商完成' || status.checked === '已核对'" :style="{ color: color[(status.checked)] }" class="title">
-        {{ status.checked }}
+      <div v-else-if="data.step > 4" :style="{ color: color['已协商'] }" class="title">
+        已协商
       </div>
-      <a-descriptions :data="talkover" layout="inline-vertical" table-layout="fixed" column="4" align="left" />
+      <a-descriptions v-if="data.step >= 4" :data="talkover" layout="inline-vertical" table-layout="fixed" column="4" align="left" />
+      <div class="flex flex-col px-5 mt-2 gap-y-2">
+        预期耗材
+        <a-input-tag v-model="transformedArray_estimate" placeholder="耗材详情" allow-clear readonly />
+      </div>
     </a-card>
   </a-space>
   <div :style="{ marginBottom: '15px' }" class="px-2">
-    <div v-if="status.checked === '未核对' " class="flex gap-x-3 justify-end">
-      <a-button type="primary" :disabled="!consult" @click="verify">
+    <div v-if="data.step === 4 " class="flex gap-x-3 justify-end">
+      <a-button type="primary" @click="confirm()">
         确认
       </a-button>
-      <a-button type="secondary" :disabled="!consult" @click="consultation">
-        拒绝
-      </a-button>
     </div>
-    <a-space v-else>
+    <a-space v-else-if="data.step > 4">
       <a-card>
-        <div v-if="status.is_consult === '协商中' && status.acceptance === '未验收'" :style="{ color: color[(status.is_consult)] }" class="title">
-          {{ status.is_consult }}
+        <div v-if="data.step === 5 || data.step === 6 || data.step === 7" :style="{ color: color[(data.status)] }" class="title">
+          {{ data.status }}
         </div>
-        <div v-else-if="status.is_consult === '协商完成' || status.acceptance === '已验收'" :style="{ color: color[(status.acceptance)] }" class="title">
-          {{ status.acceptance }}
+        <div v-if="data.step > 7 " :style="{ color: color['已支付'] }" class="title">
+          已支付
         </div>
-        <a-descriptions :data="accept" layout="inline-vertical" table-layout="fixed" column="4" align="left" />
+        <a-descriptions v-if=" data.step >= 6" :data="accept" layout="inline-vertical" table-layout="fixed" column="4" align="left" />
+        <a-descriptions layout="inline-vertical">
+          <a-descriptions-item label="完工说明">
+            {{ data.comment }}
+          </a-descriptions-item>
+        </a-descriptions>
+        <div class="flex flex-col px-5 mt-2 gap-y-2">
+          实际耗材
+          <a-input-tag v-model="transformedArray_actual" placeholder="耗材详情" allow-clear readonly />
+        </div>
       </a-card>
     </a-space>
   </div>
-  <div v-if="status.checked === '已核对'" :style="{ marginBottom: '15px' }" class="px-2">
-    <div v-if="status.acceptance === '未验收'" class="flex gap-x-3 justify-end">
-      <a-button type="primary" :disabled="!consult" @click="acceptance">
-        确认并支付
-      </a-button>
-      <a-button type="secondary" :disabled="!consult" @click="consultation">
-        拒绝
+  <div :style="{ marginBottom: '15px' }" class="px-2">
+    <div v-if="data.step === 6" class="flex gap-x-3 justify-end">
+      <a-button type="primary" @click="last_confirm()">
+        确认
       </a-button>
     </div>
-    <div v-else>
+    <div v-if="data.step === 7" class="flex gap-x-3 justify-end">
+      <a-button type="primary" @click="pay">
+        支付
+      </a-button>
+    </div>
+    <div v-if="data.step > 7">
       <a-card>
-        <div :style="{ color: color[(status.evaluation)] }" class="title">
-          {{ status.evaluation }}
+        <div :style="{ color: color[(data.status)] }" class="title">
+          {{ data.status }}
         </div>
         <div class="title flex">
-          <div class="flex items-center gap-x-1 flex-1">
-            <div>响应时间</div>
-            <div><a-rate v-model="timing_rate" allow-half @change="evaluation" /></div>
+          <div class="flex items-begin gap-y-3 flex-1 flex-col">
+            <div class="flex items-center gap-x-5">
+              <div>满意程度</div>
+              <a-rate v-model="rate" allow-half />
+            </div>
+            <div class="gap-y-2 flex flex-col">
+              <div>评论</div>
+              <a-input v-model="comment" placeholder="发表评论" allow-clear />
+            </div>
           </div>
-          <div class="flex items-center gap-x-1 flex-1">
-            <div>维修质量</div>
-            <a-rate v-model="quality_rate" allow-half @change="evaluation" />
-          </div>
-          <div class="flex items-center gap-x-1 flex-1">
-            <div>服务态度</div>
-            <a-rate v-model="attitude_rate" allow-half @change="evaluation" />
-          </div>
+        </div>
+        <div v-if="data.step === 8" class="flex gap-x-3 justify-end">
+          <a-button type="primary" @click="rate_comment">
+            提交
+          </a-button>
         </div>
       </a-card>
     </div>
