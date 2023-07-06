@@ -26,3 +26,12 @@ export interface UserState {
   created_at?: string
   updated_at?: string
 }
+
+export interface UserInfoUpdateForm {
+  name: string
+  sex: string
+  phone: string
+  department: string
+  job_type: JobType,
+  avatar: string
+}

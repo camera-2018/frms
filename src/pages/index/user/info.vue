@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { useDateFormat } from '@vueuse/core'
 import { storeToRefs } from 'pinia'
 import useUserStore from '../../../store/user'
 
