@@ -46,6 +46,7 @@ declare module 'vue-router/auto/routes' {
     '//report': RouteRecordInfo<'//report', '/report', Record<never, never>, Record<never, never>>,
     '//task/[id]': RouteRecordInfo<'//task/[id]', '/task/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
     '//tasklist': RouteRecordInfo<'//tasklist', '/tasklist', Record<never, never>, Record<never, never>>,
+    '//track/[id]': RouteRecordInfo<'//track/[id]', '/track/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
     '//user/info': RouteRecordInfo<'//user/info', '/user/info', Record<never, never>, Record<never, never>>,
     '//user/modify': RouteRecordInfo<'//user/modify', '/user/modify', Record<never, never>, Record<never, never>>,
     '/login': RouteRecordInfo<'/login', '/login', Record<never, never>, Record<never, never>>,
