@@ -8,7 +8,7 @@ const user_route = [
   },
   {
     title: '我要报修',
-    key: '/fix',
+    key: '/report',
     sub: [],
   },
   {

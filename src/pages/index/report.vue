@@ -1,107 +1,76 @@
-<script setup>
+<script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStorage } from '@vueuse/core'
 import { base_url } from '../../utils/config'
+import useUserStore from '../../store/user'
+import { FileItem } from '@arco-design/web-vue';
+import { ReportForm } from '../../schema/repair';
 
 const router = useRouter()
-
+const userStore = useUserStore()
 const current = ref(1)
 
-const form = reactive({
+const form = reactive<ReportForm>({
   type: '',
   is_urgent: false,
   detail: '',
   place: '',
   attachment: [],
 })
-async function res() {
-  const response = await fetch(`${base_url}/repairs`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${useStorage('token').value}`,
-    },
-  })
-  const data = (await response.json()).data
-  return data
-}
-const repair_id = reactive((await res()).repair_info._id)
 
-async function res1() {
-  const response = await fetch(`${base_url}/request/${repair_id}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${useStorage('token').value}`,
-    },
-    body: JSON.stringify(form),
-  })
-  const data = (await response.json()).data
-  return data
-}
-
-const isCommit = ref(false)
-
-async function user() {
-  const response = await fetch(`${base_url}/user/info`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${useStorage('token').value}`,
-    },
-  })
-  const data = (await response.json()).data
-  return data
-}
-const user_data = reactive((await user()).user_info)
-
-async function handleSubmit({ values, errors }) {
-  await res1()
-  if (!errors)
-    current.value = 2
-  else
-    current.value = 1
-}
-
-function onPret() {
-  current.value = Math.max(1, current.value - 1)
-}
-
-function setCurrent(new_current) {
-  current.value = new_current
-}
-
-function onReset() {
+function handleReset() {
   form.type = ''
   form.is_urgent = false
   form.detail = ''
   form.place = ''
+  form.attachment = []
 }
 
-function onPost() {
-  router.push('/list')
-}
-
-function onsuccess(fileItem) {
+function onSuccess(fileItem: FileItem) {
   form.attachment.push(fileItem.response.data.url)
 }
+
+async function handleSubmit() {
+  const  resp = await fetch(`${base_url}/repairs`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${userStore.token}`,
+    },
+  })
+  const payload = await resp.json()
+  const repair_id = payload.data.repair_info._id
+  console.log(repair_id)
+
+ await fetch(`${base_url}/request/${repair_id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${userStore.token}`,
+    },
+    body: JSON.stringify(form),
+  })
+
+  await router.push('list')
+}
+
+const repair_type = ['锁匠', '集中供热', '寝室洗衣机', '水工类', '玻璃类', '塑钢类', '木工类', '电工类', '泥工类', '其他']
 </script>
 
 <template>
-  <div class="process">
+  <div class="h-full flex flex-col">
     <div>
-      <a-steps changeable :current="current" type="arrow" @change="setCurrent">
+      <a-steps :current="current" type="arrow">
         <a-step description="在这里填写维修基本信息">
           维修基本信息
         </a-step>
-        <a-step description="确认委派" :disabled="!isCommit.value">
+        <a-step description="确认委派">
           确认委派信息
         </a-step>
       </a-steps>
     </div>
-    <div class="m-form">
+    <div class="flex justify-center mt-16">
       <div v-if="current === 1">
-        <a-form size="large" :model="form" :style="{ width: '600px' }" @submit="handleSubmit">
+        <a-form size="large" :model="form" :style="{ width: '600px' }" @submit-success="current = 2">
           <a-form-item field="is_urgent" label="是否加急" :rules="[{ required: true, message: '必须选择是否加急' }]">
             <a-radio-group v-model="form.is_urgent">
               <a-radio :value="true">
@@ -114,49 +83,44 @@ function onsuccess(fileItem) {
           </a-form-item>
           <a-form-item field="type" label="故障类型" :rules="[{ required: true, message: '必须输入故障类型' }]">
             <a-select v-model="form.type" placeholder="请选择故障类型 ..." allow-clear>
-              <a-option value="water">
-                水工
-              </a-option>
-              <a-option value="electron">
-                电器
-              </a-option>
-              <a-option value="other">
-                其他
+              <a-option v-for="item in repair_type" :key="item">
+                {{ item }}
               </a-option>
             </a-select>
           </a-form-item>
           <a-form-item field="detail" label="故障详情" :rules="[{ required: true, message: '必须输入故障详情' }]">
-            <a-input v-model="form.detail" placeholder="请输入故障详情..." />
+            <a-textarea v-model="form.detail" placeholder="请输入故障详情..." />
           </a-form-item>
           <a-form-item field="place" label="维修地点" :rules="[{ required: true, message: '必须输入维修地点' }]">
             <a-input v-model="form.place" placeholder="请输入维修地点..." />
           </a-form-item>
           <a-form-item field="attachment" label="图片">
-            <a-upload draggable :action="`${base_url}/upload`" list-type="picture" image-preview :limit="5" tip="可以上传PNG、JPG等格式的图片，最大限制5张50M" @success="onsuccess" />
+            <a-upload draggable :action="`${base_url}/upload`" list-type="picture" image-preview :limit="5"
+              tip="可以上传PNG、JPG等格式的图片，最大限制5张50M" @success="onSuccess" />
           </a-form-item>
           <a-form-item>
-            <a-space>
+            <div class="mt-2 flex gap-x-4 items-center justify-center">
               <a-button html-type="submit" type="primary">
                 下一步
               </a-button>
-              <a-button @click="onReset">
-                重置
+              <a-button @click="handleReset">
+                清空输入
               </a-button>
-            </a-space>
+            </div>
           </a-form-item>
         </a-form>
       </div>
       <div v-if="current === 2">
         <div>
-          <a-descriptions style="margin-top: 20px" :data="data" size="large" title="报修单" :column="1">
+          <a-descriptions style="margin-top: 20px" size="large" title="报修单" :column="1">
             <a-descriptions-item label="姓名">
-              {{ user_data.name }}
+              {{ userStore.name }}
             </a-descriptions-item>
             <a-descriptions-item label="所属部门">
-              {{ user_data.department }}
+              {{ userStore.department }}
             </a-descriptions-item>
             <a-descriptions-item label="联系电话">
-              {{ user_data.phone }}
+              {{ userStore.phone }}
             </a-descriptions-item>
             <a-descriptions-item label="故障类型">
               {{ form.type }}
@@ -174,10 +138,10 @@ function onsuccess(fileItem) {
         </div>
         <div>
           <a-space>
-            <a-button @click="onPret">
+            <a-button @click="current = Math.max(1, current - 1)">
               返回
             </a-button>
-            <a-button type="primary" @click="onPost">
+            <a-button type="primary" @click="handleSubmit">
               提交
             </a-button>
           </a-space>
@@ -187,19 +151,4 @@ function onsuccess(fileItem) {
   </div>
 </template>
 
-<style scoped>
-.process{
-  @apply h-full flex flex-col;
-}
-.next{
-  padding: 5px;
-}
-.m-form {
-  @apply flex justify-center py-[7rem];
-}
-
-.button{
-  display: flex;
-  justify-content: center;
-}
-</style>
+<style scoped></style>

@@ -31,7 +31,7 @@ function pushto(id: any) {
 
 }
 
-async function fetchList(){
+async function fetchList() {
   const resp = await fetch(`${base_url}/repairs`, {
     method: 'GET',
     headers: {
@@ -117,11 +117,11 @@ onMounted(async () => {
           </div>
         </div>
         <div class="flex gap-x-2">
-          这里有什么编表头的必要吗？
+          <!-- 这里有什么编表头的必要吗？ -->
         </div>
       </div>
     </template>
-    <a-list-item v-for="element in repair_list" :key="element._id" class="list_item">
+    <a-list-item v-for="element in repair_list" :key="element._id" class="cursor-pointer hover:bg-gray-200">
       <a-list-item-meta :title="element.detail"
         :description="`${useDateFormat(element.updated_at, 'YYYY-MM-DD HH:mm:ss').value}\t${element.place}`" />
       <template #actions>
@@ -172,20 +172,8 @@ onMounted(async () => {
   </a-modal>
 </template>
 
-<style scoped>
-.list_item {
-  @apply cursor-pointer;
-}
-
-.list_item:hover {
-  background-color: rgb(243 244 246)
-}
-
-.list_title {
-  background-color: rgb(186 230 253);
-}
-
-.list_title:hover {
-  background-color: rgb(186 230 253);
+<style>
+.arco-list-header {
+  @apply !bg-blue-100;
 }
 </style>

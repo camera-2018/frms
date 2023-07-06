@@ -55,6 +55,7 @@ declare module 'vue' {
     ASubMenu: typeof import('@arco-design/web-vue')['SubMenu']
     ASwitch: typeof import('@arco-design/web-vue')['Switch']
     ATag: typeof import('@arco-design/web-vue')['Tag']
+    ATextarea: typeof import('@arco-design/web-vue')['Textarea']
     AUpload: typeof import('@arco-design/web-vue')['Upload']
     Footer: typeof import('./src/components/Footer.vue')['default']
     LoginBanner: typeof import('./src/components/LoginBanner.vue')['default']

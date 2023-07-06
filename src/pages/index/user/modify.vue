@@ -116,13 +116,13 @@ function onProgress(currentFile) {
           </a-upload>
         </a-space>
       </a-form-item>
-      <a-form-item no-style class="block">
+      <a-form-item>
         <div class="mt-2 flex gap-x-4 items-center justify-center">
-          <a-button @click="router.push('/user/info')">
-            取消
-          </a-button>
           <a-button html-type="submit" type="primary">
             保存修改
+          </a-button>
+          <a-button @click="router.push('/user/info')">
+            取消
           </a-button>
         </div>
       </a-form-item>

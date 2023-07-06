@@ -47,3 +47,13 @@ export interface Repair {
   created_at?: Date;
   updated_at?: Date;
 }
+
+export interface ReportForm {
+  [key: string]: any;
+
+  type: string
+  is_urgent: boolean
+  detail: string
+  place: string
+  attachment: Array<string>
+}
