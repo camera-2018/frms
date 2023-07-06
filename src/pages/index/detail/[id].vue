@@ -1,11 +1,11 @@
 <script setup>
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { reactive, ref } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { base_url } from '../../../utils/config'
 
 const repair_id = useRoute('/detail/[id]').params.id
-
+const router = useRouter()
 async function res_list() {
   const response = await fetch(`${base_url}/repairs/${repair_id}`, {
     method: 'GET',
@@ -18,7 +18,6 @@ async function res_list() {
   return data
 }
 const data = reactive((await res_list()).repair_info)
-// console.log(data)
 
 const { is_accept, is_assign, is_confirm, is_consult, is_pay, is_rate, is_repair, is_request } = data.flags
 
@@ -49,22 +48,22 @@ async function consult() {
   const response = await fetch(`${base_url}/consult/${repair_id}`, {
     method: 'PATCH',
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${useStorage('token').value}`,
+      Authorization: `Bearer ${useStorage('token').value}`,
     },
   })
   const data = (await response.json()).data
+  await router.back()
   return data
 }
 async function last_consult() {
   const response = await fetch(`${base_url}/confirm/${repair_id}`, {
     method: 'PATCH',
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${useStorage('token').value}`,
+      Authorization: `Bearer ${useStorage('token').value}`,
     },
   })
   const data = (await response.json()).data
+  await router.back()
   return data
 }
 
@@ -72,11 +71,11 @@ async function pay() {
   const response = await fetch(`${base_url}/pay/${repair_id}`, {
     method: 'PATCH',
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${useStorage('token').value}`,
+      Authorization: `Bearer ${useStorage('token').value}`,
     },
   })
   const data = (await response.json()).data
+  await router.back()
   return data
 }
 
@@ -88,11 +87,12 @@ async function rate_comment() {
       'Authorization': `Bearer ${useStorage('token').value}`,
     },
     body: JSON.stringify({
-      rate,
-      comment,
+      rate: rate.value,
+      comment: comment.value,
     }),
   })
   const data = (await response.json()).data
+  await router.back()
   return data
 }
 
@@ -189,22 +189,26 @@ const accept = label_accept.map((element) => {
 })
 
 const color = {
+  已评价: '#3ADC4A',
+  未评价: '#D8B024',
+  已下单: '#7C7D80',
+  未验收: '#FF0E0E',
+  未核对: '#D8B024',
+  已完成: '#000000',
   待派单: '#7C7D80',
   待接单: '#7C7D80',
-  已下单: '#3ADC4A',
-  待协商: '#D8B024',
-  已协商: '#3ADC4A',
-  维修中: '#7C7D80',
-  待验收: '#D8B024',
-  待支付: '#D8B024',
-  已支付: '#3ADC4A',
+  待协商: '#FF9800',
+  维修中: '#2196F3',
+  待验收: '#FF0E0E',
+  待支付: '#9C27B0',
   待评价: '#D8B024',
-  已完成: '#3ADC4A',
+  已分配: '#3ADC4A',
+  未分配: '#FF0E0E',
 }
 </script>
 
 <template>
-  <a-space direction="vertical" size="large" class="px-2" :style="{ marginBottom: '15px' }">
+  <a-space direction="vertical" size="large" class="px-2 mb-[15px] mt-2">
     <a-card>
       <div v-if="data.step <= 2" :style="{ color: color[data.status] }" class="title">
         {{ data.status }}
@@ -213,6 +217,18 @@ const color = {
         已下单
       </div>
       <a-descriptions :data="order" layout="inline-vertical" table-layout="fixed" column="4" align="left" />
+      <br>
+      <a-space v-if="data.attachment.length !== 0" class="px-5">
+        <div>报修图片</div>
+        <a-image-preview-group infinite>
+          <a-image
+            v-for="i in data.attachment"
+            :key="i"
+            width="200"
+            :src="i[0] === 'u' ? `${base_url}/${i}` : i"
+          />
+        </a-image-preview-group>
+      </a-space>
     </a-card>
   </a-space>
   <a-space v-if="data.step > 2" direction="vertical" :style="{ marginBottom: '15px' }" size="large" class="px-2">
@@ -224,6 +240,18 @@ const color = {
         已协商
       </div>
       <a-descriptions v-if="data.step >= 4" :data="talkover" layout="inline-vertical" table-layout="fixed" column="4" align="left" />
+      <br>
+      <a-space v-if="data.attachment.length !== 0" class="px-5">
+        <div>报修图片</div>
+        <a-image-preview-group infinite>
+          <a-image
+            v-for="i in data.attachment"
+            :key="i"
+            width="200"
+            :src="i[0] === 'u' ? `${base_url}/${i}` : i"
+          />
+        </a-image-preview-group>
+      </a-space>
       <div class="flex flex-col px-5 mt-2 gap-y-2">
         预期耗材
         <a-input-tag v-model="transformedArray_estimate" placeholder="耗材详情" allow-clear readonly />
@@ -250,6 +278,18 @@ const color = {
             {{ data.comment }}
           </a-descriptions-item>
         </a-descriptions>
+        <br>
+        <a-space v-if="data.attachment.length !== 0" class="px-5">
+          <div>报修图片</div>
+          <a-image-preview-group infinite>
+            <a-image
+              v-for="i in data.attachment"
+              :key="i"
+              width="200"
+              :src="i[0] === 'u' ? `${base_url}/${i}` : i"
+            />
+          </a-image-preview-group>
+        </a-space>
         <div class="flex flex-col px-5 mt-2 gap-y-2">
           实际耗材
           <a-input-tag v-model="transformedArray_actual" placeholder="耗材详情" allow-clear readonly />

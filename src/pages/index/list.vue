@@ -19,7 +19,8 @@ async function res() {
 
 let repair_list = reactive([])
 
-repair_list = (await res()).repair_list
+repair_list = (await res()).repair_list.filter(repair => repair.status !== '待提交')
+
 const color = {
   已评价: '#3ADC4A',
   未评价: '#D8B024',
@@ -28,13 +29,14 @@ const color = {
   未核对: '#D8B024',
   已完成: '#000000',
   待派单: '#7C7D80',
-  待提交: '#D8B024',
   待接单: '#7C7D80',
   待协商: '#FF9800',
   维修中: '#2196F3',
   待验收: '#FF0E0E',
   待支付: '#9C27B0',
   待评价: '#D8B024',
+  已分配: '#3ADC4A',
+  未分配: '#FF0E0E',
 }
 
 function is_worker() {
@@ -62,7 +64,12 @@ function pushto(id) {
         </div>
       </template>
     </a-list-item>
-    <a-list-item v-for="element in repair_list" :key="element.__id" class="list_item" @click="pushto(element._id)">
+    <a-list-item
+      v-for="element in repair_list"
+      :key="element._id"
+      class="list_item"
+      @click="pushto(element._id)"
+    >
       <a-list-item-meta
         :title="element.detail"
         :description="`${useDateFormat(element.updated_at, 'YYYY-MM-DD HH:mm:ss').value}    ${element.place}`"

@@ -1,35 +1,54 @@
 <script setup>
+import { reactive } from 'vue'
+import { useDateFormat, useStorage } from '@vueuse/core'
+import { base_url } from '../../utils/config'
+
 const router = useRouter()
-const res = [
-  {
-    title: '厕所灯泡不亮',
-    description: '2022-04-01 杭州电子科技大学下沙生活区11号楼北517 202109060550',
-    status: '已分配',
-    id: 1,
-  },
-  {
-    title: '厕所喷头掉落',
-    description: '2022-04-01 杭州电子科技大学下沙生活区11号楼北517 202102348440',
-    status: '未分配',
-    id: 2,
-  },
-]
+async function res() {
+  const response = await fetch(`${base_url}/repairs`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${useStorage('token').value}`,
+    },
+  })
+  const data = (await response.json()).data
+  return data
+}
+
+let repair_list = reactive([])
+
+repair_list = (await res()).repair_list.filter(repair => repair.status === '待派单')
+
 const color = {
+  已评价: '#3ADC4A',
+  未评价: '#D8B024',
+  已下单: '#7C7D80',
+  未验收: '#FF0E0E',
+  未核对: '#D8B024',
+  已完成: '#000000',
+  待派单: '#7C7D80',
+  待接单: '#7C7D80',
+  待协商: '#FF9800',
+  维修中: '#2196F3',
+  待验收: '#FF0E0E',
+  待支付: '#9C27B0',
+  待评价: '#D8B024',
   已分配: '#3ADC4A',
   未分配: '#FF0E0E',
 }
 
-function detail(id) {
-  router.push(`/detail/${id}`)
+async function pushto(id) {
+  await router.push(`/task/${id}`)
 }
 </script>
 
 <template>
-  <a-list>
-    <a-list-item>
+  <a-list hoverable="true">
+    <a-list-item class="list_title">
       <a-list-item-meta
         title="故障详情"
-        description="报修时间 报修地点 报修单号"
+        description="报修时间 报修地点"
       />
       <template #actions>
         <div :style="{ color: '#7C7D80' }">
@@ -37,10 +56,15 @@ function detail(id) {
         </div>
       </template>
     </a-list-item>
-    <a-list-item v-for="element in res" :key="element.title" class="list_item" @click="detail(element.id)">
+    <a-list-item
+      v-for="element in repair_list"
+      :key="element._id"
+      class="list_item"
+      @click="pushto(element._id)"
+    >
       <a-list-item-meta
-        :title="element.title"
-        :description="element.description"
+        :title="element.detail"
+        :description="`${useDateFormat(element.updated_at, 'YYYY-MM-DD HH:mm:ss').value}    ${element.place}`"
       />
       <template #actions>
         <div :style="{ color: color[element.status] }">
@@ -54,5 +78,8 @@ function detail(id) {
 <style scoped>
 .list_item {
   @apply cursor-pointer;
+}
+.list_title {
+  @apply bg-blue-100 hover:bg-blue-100
 }
 </style>

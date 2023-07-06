@@ -44,6 +44,7 @@ declare module 'vue-router/auto/routes' {
     '//fix': RouteRecordInfo<'//fix', '/fix', Record<never, never>, Record<never, never>>,
     '//list': RouteRecordInfo<'//list', '/list', Record<never, never>, Record<never, never>>,
     '//order/[id]': RouteRecordInfo<'//order/[id]', '/order/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
+    '//task/[id]': RouteRecordInfo<'//task/[id]', '/task/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
     '//tasklist': RouteRecordInfo<'//tasklist', '/tasklist', Record<never, never>, Record<never, never>>,
     '//user/info': RouteRecordInfo<'//user/info', '/user/info', Record<never, never>, Record<never, never>>,
     '//user/modify': RouteRecordInfo<'//user/modify', '/user/modify', Record<never, never>, Record<never, never>>,

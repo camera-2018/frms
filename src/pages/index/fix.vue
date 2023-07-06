@@ -42,6 +42,19 @@ async function res1() {
 
 const isCommit = ref(false)
 
+async function user() {
+  const response = await fetch(`${base_url}/user/info`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${useStorage('token').value}`,
+    },
+  })
+  const data = (await response.json()).data
+  return data
+}
+const user_data = reactive((await user()).user_info)
+
 async function handleSubmit({ values, errors }) {
   await res1()
   if (!errors)
@@ -135,15 +148,15 @@ function onsuccess(fileItem) {
       </div>
       <div v-if="current === 2">
         <div>
-          <a-descriptions style="margin-top: 20px" :data="data" size="large" title="保修单" :column="1">
+          <a-descriptions style="margin-top: 20px" :data="data" size="large" title="报修单" :column="1">
             <a-descriptions-item label="姓名">
-              ibbbb
+              {{ user_data.name }}
             </a-descriptions-item>
             <a-descriptions-item label="所属部门">
-              杭州电子科技大学下沙校区
+              {{ user_data.department }}
             </a-descriptions-item>
             <a-descriptions-item label="联系电话">
-              15167901584
+              {{ user_data.phone }}
             </a-descriptions-item>
             <a-descriptions-item label="故障类型">
               {{ form.type }}

@@ -23,11 +23,6 @@ const menu_for_user = [
 
 const menu_for_administrator = [
   {
-    title: '记录管理',
-    key: '/',
-    sub: [],
-  },
-  {
     title: '任务委派',
     key: '/tasklist',
     sub: [],

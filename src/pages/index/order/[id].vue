@@ -1,12 +1,12 @@
 <script setup>
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { reactive, ref } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { IconDelete, IconPlus } from '@arco-design/web-vue/es/icon'
 import { base_url } from '../../../utils/config'
 
 const repair_id = useRoute('/order/[id]').params.id
-
+const router = useRouter()
 async function res_list() {
   const response = await fetch(`${base_url}/repairs/${repair_id}`, {
     method: 'GET',
@@ -37,8 +37,6 @@ data.name = user_data.name
 data.phone = user_data.phone
 data.is_urgent = data.is_urgent ? '是' : '否'
 
-// console.log(data)
-
 const key = ref('')
 const value = ref('')
 const estimate_receipt = reactive([])
@@ -55,6 +53,7 @@ async function acceptance() {
     },
   })
   const data = (await response.json()).data
+  await router.back()
   return data
 }
 
@@ -66,29 +65,31 @@ async function estimate() {
       'Authorization': `Bearer ${useStorage('token').value}`,
     },
     body: JSON.stringify({
-      estimate_cost,
+      estimate_cost: estimate_cost.value,
       estimate_receipt,
     }),
   })
   const data = (await response.json()).data
+  await router.back()
   return data
 }
 
 async function actual() {
-  const response = await fetch(`${base_url}/consult/${repair_id}`, {
+  const response = await fetch(`${base_url}/confirm/${repair_id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${useStorage('token').value}`,
     },
     body: JSON.stringify({
-      estimate_cost,
+      estimate_cost: estimate_cost.value,
       estimate_receipt,
-      is_free,
-      result,
+      is_free: is_free.value,
+      result: result.value,
     }),
   })
   const data = (await response.json()).data
+  await router.back()
   return data
 }
 
@@ -152,11 +153,11 @@ const label_accept = [
     value: 'user_id',
   },
   {
-    label: '保修内容',
+    label: '报修内容',
     value: 'detail',
   },
   {
-    label: '保修地址',
+    label: '报修地址',
     value: 'place',
   },
   {
@@ -204,13 +205,21 @@ const accept = label_accept.map((element) => {
 const index = ref()
 
 const color = {
-  待接单: '#FF0E0E',
-  待协商: '#FF0E0E',
-  维修中: '#FF0E0E',
-  待验收: '#D8B024',
-  待支付: '#D8B024',
+  已评价: '#3ADC4A',
+  未评价: '#D8B024',
+  已下单: '#7C7D80',
+  未验收: '#FF0E0E',
+  未核对: '#D8B024',
+  已完成: '#000000',
+  待派单: '#7C7D80',
+  待接单: '#7C7D80',
+  待协商: '#FF9800',
+  维修中: '#2196F3',
+  待验收: '#FF0E0E',
+  待支付: '#9C27B0',
   待评价: '#D8B024',
-  已完成: '#3ADC4A',
+  已分配: '#3ADC4A',
+  未分配: '#FF0E0E',
 }
 
 function addmaterial() {
@@ -232,158 +241,230 @@ function deletematerial(index) {
 </script>
 
 <template>
-  <div v-if="data.step === 2">
-    <a-space direction="vertical" size="large" class="px-2" :style="{ marginBottom: '15px' }">
-      <a-card>
-        <div :style="{ color: color[data.status] }" class="title">
-          {{ data.status }}
-        </div>
-        <a-descriptions :data="order" layout="inline-vertical" table-layout="fixed" column="4" align="left" />
-      </a-card>
-    </a-space>
-    <div class="flex gap-x-3 justify-center">
-      <a-button type="primary" @click="acceptance">
-        确认出勤
-      </a-button>
+  <div class="mt-2">
+    <div v-if="data.step === 2">
+      <a-space direction="vertical" size="large" class="px-2" :style="{ marginBottom: '15px' }">
+        <a-card>
+          <div :style="{ color: color[data.status] }" class="title">
+            {{ data.status }}
+          </div>
+          <a-descriptions :data="order" layout="inline-vertical" table-layout="fixed" column="4" align="left" />
+          <br>
+          <a-space v-if="data.attachment.length !== 0" class="px-6">
+            <div>报修图片</div>
+            <a-image-preview-group infinite>
+              <a-image
+                v-for="i in data.attachment"
+                :key="i"
+                width="200"
+                :src="i[0] === 'u' ? `${base_url}/${i}` : i"
+              />
+            </a-image-preview-group>
+          </a-space>
+        </a-card>
+      </a-space>
+      <div class="flex gap-x-3 justify-center">
+        <a-button type="primary" @click="acceptance">
+          确认出勤
+        </a-button>
+      </div>
     </div>
-  </div>
-  <div v-if="data.step === 3">
-    <a-space direction="vertical" size="large" class="px-2" :style="{ marginBottom: '15px' }">
-      <a-card>
-        <div :style="{ color: color[data.status] }" class="title">
-          {{ data.status }}
-        </div>
-        <a-descriptions :data="talkover" layout="inline-vertical" table-layout="fixed" column="4" align="left" />
-        <div class="flex gap-x-20 px-5 ">
-          <div class="flex flex-col flex-1">
-            耗材详情
+    <div v-if="data.step === 3">
+      <a-space direction="vertical" size="large" class="px-2" :style="{ marginBottom: '15px' }">
+        <a-card>
+          <div :style="{ color: color[data.status] }" class="title">
+            {{ data.status }}
           </div>
-          <div class="flex  flex-col flex-1 translate-x-60">
-            耗材费用
-          </div>
-        </div>
-        <div v-for="item in estimate_receipt" :key="index" class="flex gap-x-20 px-5 mt-2">
-          <div class="flex flex-col  flex-1">
-            <a-input :placeholder="item.key" allow-clear readonly />
-          </div>
-          <div class="flex  flex-col ">
-            <a-input-number :placeholder="item.value" class="input-demo" readonly />
-          </div>
-          <div class="flex items-center gap-x-1 ">
-            <a-button type="primary" @click="deletematerial(index)">
-              <template #icon>
-                <IconDelete />
-              </template>
-            </a-button>
-          </div>
-        </div>
-        <div class="flex gap-x-20 px-5 mt-2">
-          <div class="flex flex-col  flex-1">
-            <a-input v-model="key" placeholder="请输入耗材名" allow-clear />
-          </div>
-          <div class="flex  flex-col ">
-            <a-input-number v-model="value" placeholder="请输入(元)" class="input-demo" />
-          </div>
-          <div class="flex items-center gap-x-1">
-            <a-button type="primary" @click="addmaterial">
-              <template #icon>
-                <IconPlus />
-              </template>
-            </a-button>
-          </div>
-        </div>
-      </a-card>
-    </a-space>
-    <div class="flex gap-x-3 justify-center">
-      <a-button type="primary" @click="estimate">
-        提交
-      </a-button>
-    </div>
-  </div>
-  <div v-if="data.step === 5">
-    <a-space direction="vertical" size="large" class="px-2" :style="{ marginBottom: '15px' }">
-      <a-card>
-        <div :style="{ color: color[data.status] }" class="title">
-          {{ data.status }}
-        </div>
-        <a-descriptions :data="talkover" layout="inline-vertical" table-layout="fixed" column="4" align="left" />
-        <div class="px-5 mt-2 mb-2 flex gap-x-10">
-          <div class="flex flex-col ">
-            是否免费
-            <a-switch v-model="is_free" />
-          </div>
-          <div class="flex flex-col flex-1">
-            维修结果
-            <a-input v-model="result" placeholder="请输入维修结果" allow-clear />
-          </div>
-        </div>
-        <div class="flex gap-x-20 px-5 ">
-          <div class="flex flex-col flex-1">
-            耗材详情
-          </div>
-          <div class="flex  flex-col flex-1 translate-x-60">
-            耗材费用
-          </div>
-        </div>
-        <div v-for="item in estimate_receipt" :key="index" class="flex gap-x-20 px-5 mt-2">
-          <div class="flex flex-col  flex-1">
-            <a-input :placeholder="item.key" allow-clear readonly />
-          </div>
-          <div class="flex  flex-col ">
-            <a-input-number :placeholder="item.value" class="input-demo" readonly />
-          </div>
-          <div class="flex items-center gap-x-1 ">
-            <a-button type="primary" @click="deletematerial(index)">
-              <template #icon>
-                <IconDelete />
-              </template>
-            </a-button>
-          </div>
-        </div>
-        <div class="flex gap-x-20 px-5 mt-2">
-          <div class="flex flex-col  flex-1">
-            <a-input v-model="key" placeholder="请输入耗材名" allow-clear />
-          </div>
-          <div class="flex  flex-col ">
-            <a-input-number v-model="value" placeholder="请输入(元)" class="input-demo" />
-          </div>
-          <div class="flex items-center gap-x-1">
-            <a-button type="primary" @click="addmaterial">
-              <template #icon>
-                <IconPlus />
-              </template>
-            </a-button>
-          </div>
-        </div>
-      </a-card>
-    </a-space>
-    <div class="flex gap-x-3 justify-center">
-      <a-button type="primary" @click="estimate">
-        提交
-      </a-button>
-    </div>
-  </div>
-  <div v-if="data.step > 5">
-    <a-space direction="vertical" size="large" class="px-2" :style="{ marginBottom: '15px' }">
-      <a-card>
-        <div :style="{ color: color[data.status] }" class="title">
-          {{ data.status }}
-        </div>
-        <a-descriptions :data="accept" layout="inline-vertical" table-layout="fixed" column="4" align="left" />
-        <div v-if="data.step > 8" class="title flex flex-col gap-y-3 mt-3">
-          <div class="flex items-center gap-x-5 ">
-            <div>用户满意程度</div>
-            <a-rate v-model="data.rate" allow-half readonly />
-          </div>
-          <div class="gap-y-3 flex-col items-center">
-            <div class="mb-3">
-              用户评论
+          <a-descriptions :data="talkover" layout="inline-vertical" table-layout="fixed" column="4" align="left" />
+          <br>
+          <a-space v-if="data.attachment.length !== 0" class="px-6">
+            <div>报修图片</div>
+            <a-image-preview-group infinite>
+              <a-image
+                v-for="i in data.attachment"
+                :key="i"
+                width="200"
+                :src="i[0] === 'u' ? `${base_url}/${i}` : i"
+              />
+            </a-image-preview-group>
+          </a-space>
+          <div class="flex gap-x-20 px-5 ">
+            <div class="flex flex-col flex-1">
+              耗材详情
             </div>
-            <a-input v-model="data.comment" placeholder="发表评论" readonly />
+            <div class="flex  flex-col flex-1 translate-x-60">
+              耗材费用
+            </div>
           </div>
-        </div>
-      </a-card>
-    </a-space>
+          <div v-for="item in estimate_receipt" :key="item" class="flex gap-x-20 px-5 mt-2">
+            <div class="flex flex-col  flex-1">
+              <a-input :placeholder="item.key" allow-clear readonly />
+            </div>
+            <div class="flex  flex-col ">
+              <a-input-number :placeholder="item.value" class="input-demo" readonly />
+            </div>
+            <div class="flex items-center gap-x-1 ">
+              <a-button type="primary" @click="deletematerial(index)">
+                <template #icon>
+                  <IconDelete />
+                </template>
+              </a-button>
+            </div>
+          </div>
+          <div class="flex gap-x-20 px-5 mt-2">
+            <div class="flex flex-col  flex-1">
+              <a-input v-model="key" placeholder="请输入耗材名" allow-clear />
+            </div>
+            <div class="flex  flex-col ">
+              <a-input-number v-model="value" placeholder="请输入(元)" class="input-demo" />
+            </div>
+            <div class="flex items-center gap-x-1">
+              <a-button type="primary" @click="addmaterial">
+                <template #icon>
+                  <IconPlus />
+                </template>
+              </a-button>
+            </div>
+          </div>
+        </a-card>
+      </a-space>
+      <div class="flex gap-x-3 justify-center">
+        <a-button type="primary" @click="estimate">
+          提交
+        </a-button>
+      </div>
+    </div>
+    <div v-if="data.step === 4">
+      <a-space direction="vertical" size="large" class="px-2" :style="{ marginBottom: '15px' }">
+        <a-card>
+          <div :style="{ color: color[data.status] }" class="title">
+            {{ data.status }}
+          </div>
+          <a-descriptions :data="order" layout="inline-vertical" table-layout="fixed" column="4" align="left" />
+          <br>
+          <a-space v-if="data.attachment.length !== 0" class="px-6">
+            <div>报修图片</div>
+            <a-image-preview-group infinite>
+              <a-image
+                v-for="i in data.attachment"
+                :key="i"
+                width="200"
+                :src="i[0] === 'u' ? `${base_url}/${i}` : i"
+              />
+            </a-image-preview-group>
+          </a-space>
+        </a-card>
+      </a-space>
+    </div>
+    <div v-if="data.step === 5">
+      <a-space direction="vertical" size="large" class="px-2" :style="{ marginBottom: '15px' }">
+        <a-card>
+          <div :style="{ color: color[data.status] }" class="title">
+            {{ data.status }}
+          </div>
+          <a-descriptions :data="talkover" layout="inline-vertical" table-layout="fixed" column="4" align="left" />
+          <br>
+          <a-space v-if="data.attachment.length !== 0" class="px-6">
+            <div>报修图片</div>
+            <a-image-preview-group infinite>
+              <a-image
+                v-for="i in data.attachment"
+                :key="i"
+                width="200"
+                :src="i[0] === 'u' ? `${base_url}/${i}` : i"
+              />
+            </a-image-preview-group>
+          </a-space>
+          <div class="px-5 mt-2 mb-2 flex gap-x-10">
+            <div class="flex flex-col ">
+              是否免费
+              <a-switch v-model="is_free" />
+            </div>
+            <div class="flex flex-col flex-1">
+              维修结果
+              <a-input v-model="result" placeholder="请输入维修结果" allow-clear />
+            </div>
+          </div>
+          <div class="flex gap-x-20 px-5 ">
+            <div class="flex flex-col flex-1">
+              耗材详情
+            </div>
+            <div class="flex  flex-col flex-1 translate-x-60">
+              耗材费用
+            </div>
+          </div>
+          <div v-for="item in estimate_receipt" :key="item" class="flex gap-x-20 px-5 mt-2">
+            <div class="flex flex-col  flex-1">
+              <a-input :placeholder="item.key" allow-clear readonly />
+            </div>
+            <div class="flex  flex-col ">
+              <a-input-number :placeholder="item.value" class="input-demo" readonly />
+            </div>
+            <div class="flex items-center gap-x-1 ">
+              <a-button type="primary" @click="deletematerial(index)">
+                <template #icon>
+                  <IconDelete />
+                </template>
+              </a-button>
+            </div>
+          </div>
+          <div class="flex gap-x-20 px-5 mt-2">
+            <div class="flex flex-col  flex-1">
+              <a-input v-model="key" placeholder="请输入耗材名" allow-clear />
+            </div>
+            <div class="flex  flex-col ">
+              <a-input-number v-model="value" placeholder="请输入(元)" class="input-demo" />
+            </div>
+            <div class="flex items-center gap-x-1">
+              <a-button type="primary" @click="addmaterial">
+                <template #icon>
+                  <IconPlus />
+                </template>
+              </a-button>
+            </div>
+          </div>
+        </a-card>
+      </a-space>
+      <div class="flex gap-x-3 justify-center">
+        <a-button type="primary" @click="actual">
+          提交
+        </a-button>
+      </div>
+    </div>
+    <div v-if="data.step > 5">
+      <a-space direction="vertical" size="large" class="px-2" :style="{ marginBottom: '15px' }">
+        <a-card>
+          <div :style="{ color: color[data.status] }" class="title">
+            {{ data.status }}
+          </div>
+          <a-descriptions :data="accept" layout="inline-vertical" table-layout="fixed" column="4" align="left" />
+          <br>
+          <a-space v-if="data.attachment.length !== 0" class="px-6">
+            <div>报修图片</div>
+            <a-image-preview-group infinite>
+              <a-image
+                v-for="i in data.attachment"
+                :key="i"
+                width="200"
+                :src="i[0] === 'u' ? `${base_url}/${i}` : i"
+              />
+            </a-image-preview-group>
+          </a-space>
+          <div v-if="data.step > 8" class="title flex flex-col gap-y-3 mt-3">
+            <div class="flex items-center gap-x-5 ">
+              <div>用户满意程度</div>
+              <a-rate v-model="data.rate" allow-half readonly />
+            </div>
+            <div class="gap-y-3 flex-col items-center">
+              <div class="mb-3">
+                用户评论
+              </div>
+              <a-input v-model="data.comment" placeholder="发表评论" readonly />
+            </div>
+          </div>
+        </a-card>
+      </a-space>
+    </div>
   </div>
 </template>
 
