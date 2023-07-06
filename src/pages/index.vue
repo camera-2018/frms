@@ -11,6 +11,8 @@ import { ref } from 'vue'
 import { filterRoute } from '../utils/filterRoute'
 import useUserStore from '../store/user'
 import { useRoute, useRouter } from 'vue-router';
+import { onMounted } from 'vue';
+import { Message } from '@arco-design/web-vue';
 
 const router = useRouter()
 const route = useRoute()
@@ -22,6 +24,15 @@ function logout() {
 }
 
 const checkVis = ref(true)
+
+onMounted(() => {
+  try {
+    userStore.info()
+  } catch (e) {
+    Message.error('登录失效，请重新登录')
+    router.push('/login')
+  }
+})
 </script>
 
 <template>
@@ -33,8 +44,7 @@ const checkVis = ref(true)
             d="m18.66 8.286l.368-.368c.342-.343.514-.514.617-.692a1.562 1.562 0 0 0 0-1.562c-.103-.178-.275-.35-.617-.692c-.342-.342-.514-.514-.692-.616a1.562 1.562 0 0 0-1.562 0c-.178.102-.35.274-.692.616l-.368.368m-4.419 10.31l-5.523 5.524c-.343.343-.514.514-.692.617a1.562 1.562 0 0 1-1.562 0c-.179-.103-.35-.274-.692-.617c-.343-.342-.514-.514-.617-.692a1.562 1.562 0 0 1 0-1.562c.103-.178.274-.35.617-.692l5.523-5.523M18 17.75c-.898.827-1.542 1.24-2.286 1.24c-1.079 0-1.947-.868-3.682-2.604l-4.42-4.419C5.878 10.233 5.01 9.365 5.01 8.286c0-1.078.868-1.946 2.604-3.682C9.349 2.868 10.217 2 11.295 2c1.079 0 1.947.868 3.682 2.604l4.42 4.419C21.131 10.758 22 11.626 22 12.705c0 .747-.416 1.392-1.248 2.295" />
         </svg>
       </div>
-      <a-menu :default-open-keys="['4']" :default-selected-keys="['0_1']" :style="{ width: '100%' }"
-        @menu-item-click="key => router.push(key)">
+      <a-menu :style="{ width: '100%' }" @menu-item-click="key => router.push(key)">
         <div v-for="element in filterRoute()" :key="element.key">
           <a-menu-item v-if="element.sub.length === 0" :key="element.key">
             <IconApps v-if="element.title === '我的报修'" />
@@ -70,15 +80,26 @@ const checkVis = ref(true)
             </div>
           </template>
           <template #extra>
-            <a-space size="medium" class="space">
-              <a-button type="primary" @click="logout">
-                退出登录
-              </a-button>
+            <div class="text-black flex items-center gap-x-2">
               <a-avatar class="avatar">
                 <img alt="avatar"
                   src="https://p1-arco.byteimg.com/tos-cn-i-uwbnlip3yd/3ee5f13fb09879ecb5185e440cef6eb9.png~tplv-uwbnlip3yd-webp.webp">
               </a-avatar>
-            </a-space>
+              <a-dropdown>
+                <div class="cursor-pointer px-2 rounded hover:bg-gray-200 flex gap-x-1">
+                  <span class="text-bold">{{ userStore.name }}</span>
+                  <span class="text-gray-400">{{ userStore.account }}</span>
+                </div>
+                <template #content>
+                  <a-doption>
+                    <router-link to="/user/info">个人信息</router-link>
+                  </a-doption>
+                  <a-doption>
+                    <span @click="logout">退出登录</span>
+                  </a-doption>
+                </template>
+              </a-dropdown>
+            </div>
           </template>
         </a-page-header>
       </a-layout-header>
@@ -192,4 +213,5 @@ const checkVis = ref(true)
 
 .check_browser {
   @apply mt-[10rem]
-}</style>
+}
+</style>

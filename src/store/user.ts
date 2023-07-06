@@ -70,7 +70,7 @@ const useUserStore = defineStore({
       })
       const payload = await resp.json()
 
-      this.setInfo(payload.data)
+      this.setInfo(payload.data.user_info)
     }
   },
 })

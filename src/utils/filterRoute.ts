@@ -15,8 +15,12 @@ const user_route = [
     title: '我的信息',
     key: '',
     sub: [{
-      title: '个人信息维护',
+      title: '信息查看',
       key: '/user/info',
+    },
+    {
+      title: '信息修改',
+      key: '/user/modify',
     }],
   },
 ]
@@ -31,8 +35,12 @@ const admin_route = [
     title: '我的信息',
     key: '',
     sub: [{
-      title: '个人信息维护',
+      title: '信息查看',
       key: '/user/info',
+    },
+    {
+      title: '信息修改',
+      key: '/user/modify',
     }],
   },
 ]
@@ -47,9 +55,14 @@ const worker_route = [
     title: '我的信息',
     key: '',
     sub: [{
-      title: '个人信息维护',
+      title: '信息查看',
       key: '/user/info',
-    }],
+    },
+    {
+      title: '信息修改',
+      key: '/user/modify',
+    }
+    ],
   },
 ]
 
