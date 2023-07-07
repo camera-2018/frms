@@ -39,7 +39,8 @@ const actual_receipt = reactive<Array<{
 const actual_cost = ref(0)
 const result = ref("")
 const is_free = ref(false)
-
+const rate = ref(5)
+const comment = ref('')
 
 function getColor(status: string | undefined) {
   return color[status || '未分配']
@@ -237,11 +238,40 @@ async function acceptActualReceipt() {
   await fetchInfo()
   Message.success('确认成功')
 }
+
+async function pay() {
+  await fetch(`${base_url}/pay/${repair_id}`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${userStore.token}`,
+    },
+  })
+
+  await fetchInfo()
+  Message.success('支付成功')
+}
+
+async function handleRate() {
+  await fetch(`${base_url}/rate/${repair_id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${userStore.token}`,
+    },
+    body: JSON.stringify({
+      rate: rate.value,
+      comment: comment.value,
+    }),
+  })
+
+  await fetchInfo()
+  Message.success('评价完成')
+}
 </script>
 
 <template>
   <div class="flex flex-col gap-y-4 bg-gray-100">
-    <a-card>
+    <a-card v-if="repair?.step && repair?.step > 0">
       <template #title>
         报修申请单
       </template>
@@ -430,10 +460,46 @@ async function acceptActualReceipt() {
       </div>
       <div class="mb-4 text-lg font-bold text-black">维修结果</div>
       <div class="w-[480px] bg-gray-100 min-h-[64px] rounded py-1.5 px-3.5">
-        {{repair?.result}}
+        {{ repair?.result }}
       </div>
     </a-card>
-
+    <a-card>
+      <template #title>
+        账单支付
+      </template>
+      <template #extra>
+        <div class="flex gap-x-4 items-center">
+          <a-button type="primary" v-if="!repair?.flags.is_pay && role === 'user'" @click="pay">支付</a-button>
+          <div :style="{ color: getColor('待支付') }" class="font-bold" v-if="!repair?.flags.is_pay">待支付</div>
+          <div :style="{ color: getColor('已支付') }" class="font-bold" v-else>已支付</div>
+        </div>
+      </template>
+      <div class="mb-4 text-lg font-bold text-black">需要支付: {{ repair?.is_free ? 0 : repair?.actual_cost }} 元</div>
+    </a-card>
+    <a-card>
+      <template #title>
+        服务评价
+      </template>
+      <template #extra>
+        <div class="flex gap-x-4 items-center">
+          <a-button type="primary" v-if="!repair?.flags.is_rate && role === 'user'" @click="handleRate">评价</a-button>
+          <div :style="{ color: getColor('待评价') }" class="font-bold" v-if="!repair?.flags.is_rate">待评价</div>
+          <div :style="{ color: getColor('已评价') }" class="font-bold" v-else>已评价</div>
+        </div>
+      </template>
+      <div class="title flex">
+        <div class="flex items-begin gap-y-3 flex-1 flex-col">
+          <div class="flex items-center gap-x-5">
+            <div>满意程度</div>
+            <a-rate v-model="rate" allow-half :default-value="5" />
+          </div>
+          <div class="gap-y-2 flex flex-col">
+            <div>评论</div>
+            <a-input v-model="comment" placeholder="发表评论" allow-clear />
+          </div>
+        </div>
+      </div>
+    </a-card>
   </div>
   <a-modal :visible="modalVis" @cancel="modalVis = false">
     <template #title>
