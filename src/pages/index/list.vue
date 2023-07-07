@@ -22,13 +22,7 @@ const worker_id = ref('')
 
 
 function pushto(id: any) {
-  if (userStore.role === 'worker') {
-    router.push(`/order/${id}`)
-  }
-  else {
-    router.push(`/detail/${id}`)
-  }
-
+    router.push(`/track/${id}`)
 }
 
 async function fetchList() {

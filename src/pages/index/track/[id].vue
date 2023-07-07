@@ -339,7 +339,7 @@ async function handleRate() {
       </a-descriptions>
     </a-card>
 
-    <a-card v-if="repair?.step && repair?.step > 3 && role === 'user'">
+    <a-card v-if="repair?.step && repair?.step > 2 && role === 'worker'">
       <template #title>
         评估协商
       </template>
@@ -397,7 +397,7 @@ async function handleRate() {
       </div>
     </a-card>
 
-    <a-card v-if="repair?.step && repair?.step > 5 && role === 'worker'">
+    <a-card v-if="repair?.step && repair?.step > 4 && role === 'worker'">
       <template #title>
         结果确认
       </template>
