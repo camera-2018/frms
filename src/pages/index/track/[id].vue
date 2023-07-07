@@ -357,7 +357,7 @@ async function handleRate() {
         <div class="flex gap-x-4">
           <a-input v-model="item.key" readonly :style="{ width: '480px' }" />
           <a-input-number v-model='item.value' readonly hide-button :style="{ width: '160px' }" />
-          <a-button type="primary" @click="removeItemEstimate(index)">
+          <a-button type="primary" @click="removeItemEstimate(index)" v-if="!repair.flags.is_consult">
             <template #icon>
               <IconDelete />
             </template>
@@ -367,7 +367,7 @@ async function handleRate() {
       <div class="mb-2 flex gap-x-4">
         <a-input v-model="estimateKey" placeholder="请输入耗材名" allow-clear :style="{ width: '480px' }" />
         <a-input-number v-model="estimateValue" placeholder="请输入(元)" :style="{ width: '160px' }" />
-        <a-button type="primary" @click="addItemEstimate">
+        <a-button type="primary" @click="addItemEstimate" v-if="!repair.flags.is_consult">
           <template #icon>
             <IconPlus />
           </template>
@@ -420,7 +420,7 @@ async function handleRate() {
         <div class="flex gap-x-4">
           <a-input v-model="item.key" readonly :style="{ width: '480px' }" />
           <a-input-number v-model='item.value' readonly hide-button :style="{ width: '160px' }" />
-          <a-button type="primary" @click="removeItemActual(index)">
+          <a-button type="primary" @click="removeItemActual(index)" v-if="!repair.flags.is_confirm">
             <template #icon>
               <IconDelete />
             </template>
@@ -430,7 +430,7 @@ async function handleRate() {
       <div class="mb-2 flex gap-x-4">
         <a-input v-model="actualKey" placeholder="请输入耗材名" allow-clear :style="{ width: '480px' }" />
         <a-input-number v-model="actualValue" placeholder="请输入(元)" :style="{ width: '160px' }" />
-        <a-button type="primary" @click="addItemActual">
+        <a-button type="primary" @click="addItemActual" v-if="!repair.flags.is_confirm">
           <template #icon>
             <IconPlus />
           </template>
@@ -438,7 +438,7 @@ async function handleRate() {
       </div>
       <div class="mb-4 text-lg font-bold text-black">维修结果</div>
       <div class="w-[480px]">
-        <a-textarea v-model="result" />
+        <a-textarea v-model="result" :disabled="repair.flags.is_confirm" />
       </div>
     </a-card>
 
