@@ -88,6 +88,8 @@ async function fetchInfo() {
   actual_cost.value = payload.data.repair_info.actual_cost
   result.value = payload.data.repair_info.result
   is_free.value = payload.data.repair_info.is_free
+  rate.value = payload.data.repair_info.rate
+  comment.value = payload.data.repair_info.comment
 }
 
 async function showAssignModal() {
@@ -303,7 +305,7 @@ async function handleRate() {
       </a-image-preview-group>
     </a-card>
 
-    <a-card>
+    <a-card v-if="repair?.step && repair?.step > 1">
       <template #title>
         派单记录
       </template>
@@ -322,7 +324,7 @@ async function handleRate() {
       </a-descriptions>
     </a-card>
 
-    <a-card>
+    <a-card v-if="repair?.step && repair?.step > 2">
       <template #title>
         接单记录
       </template>
@@ -336,7 +338,8 @@ async function handleRate() {
         <a-descriptions-item label="接单时间">{{ repair?.accept_at }}</a-descriptions-item>
       </a-descriptions>
     </a-card>
-    <a-card>
+
+    <a-card v-if="repair?.step && repair?.step > 3 && role === 'user'">
       <template #title>
         评估协商
       </template>
@@ -371,7 +374,8 @@ async function handleRate() {
         </a-button>
       </div>
     </a-card>
-    <a-card>
+
+    <a-card v-if="repair?.step && repair?.step > 3 && role === 'user'">
       <template #title>
         评估协商
       </template>
@@ -393,7 +397,7 @@ async function handleRate() {
       </div>
     </a-card>
 
-    <a-card>
+    <a-card v-if="repair?.step && repair?.step > 5 && role === 'worker'">
       <template #title>
         结果确认
       </template>
@@ -437,7 +441,8 @@ async function handleRate() {
         <a-textarea v-model="result" />
       </div>
     </a-card>
-    <a-card>
+
+    <a-card v-if="repair?.step && repair?.step > 5 && role === 'user'">
       <template #title>
         结果确认
       </template>
@@ -463,7 +468,8 @@ async function handleRate() {
         {{ repair?.result }}
       </div>
     </a-card>
-    <a-card>
+
+    <a-card v-if="repair?.step && repair?.step > 6">
       <template #title>
         账单支付
       </template>
@@ -476,7 +482,8 @@ async function handleRate() {
       </template>
       <div class="mb-4 text-lg font-bold text-black">需要支付: {{ repair?.is_free ? 0 : repair?.actual_cost }} 元</div>
     </a-card>
-    <a-card>
+
+    <a-card v-if="repair?.step && repair?.step > 7">
       <template #title>
         服务评价
       </template>
@@ -500,7 +507,34 @@ async function handleRate() {
         </div>
       </div>
     </a-card>
+
+    <a-card v-if="repair?.step && repair?.step > 8">
+      <template #title>
+        服务评价
+      </template>
+      <template #extra>
+        <div class="flex gap-x-4 items-center">
+          <div :style="{ color: getColor('待评价') }" class="font-bold" v-if="!repair?.flags.is_rate">待评价</div>
+          <div :style="{ color: getColor('已评价') }" class="font-bold" v-else>已评价</div>
+        </div>
+      </template>
+      <div class="title flex">
+        <div class="flex items-begin gap-y-3 flex-1 flex-col">
+          <div class="flex items-center gap-x-5">
+            <div>满意程度</div>
+            <a-rate v-model="rate" allow-half readonly />
+          </div>
+          <div class="gap-y-2 flex flex-col">
+            <div>评论</div>
+            <a-input v-model="comment" placeholder="发表评论" readonly />
+          </div>
+        </div>
+      </div>
+    </a-card>
   </div>
+
+
+
   <a-modal :visible="modalVis" @cancel="modalVis = false">
     <template #title>
       <div class="flex items-center flex-grow gap-x-2">
