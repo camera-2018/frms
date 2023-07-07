@@ -375,7 +375,7 @@ async function handleRate() {
       </div>
     </a-card>
 
-    <a-card v-if="repair?.step && repair?.step > 3 && role === 'user'">
+    <a-card v-if="repair?.step && repair?.step > 3 && role !== 'worker'">
       <template #title>
         评估协商
       </template>
@@ -442,7 +442,7 @@ async function handleRate() {
       </div>
     </a-card>
 
-    <a-card v-if="repair?.step && repair?.step > 5 && role === 'user'">
+    <a-card v-if="repair?.step && repair?.step > 5 && role !== 'worker'">
       <template #title>
         结果确认
       </template>
@@ -483,7 +483,7 @@ async function handleRate() {
       <div class="mb-4 text-lg font-bold text-black">需要支付: {{ repair?.is_free ? 0 : repair?.actual_cost }} 元</div>
     </a-card>
 
-    <a-card v-if="repair?.step && repair?.step > 7">
+    <a-card v-if="repair?.step && repair?.step > 7 && role === 'user'">
       <template #title>
         服务评价
       </template>
@@ -508,7 +508,7 @@ async function handleRate() {
       </div>
     </a-card>
 
-    <a-card v-if="repair?.step && repair?.step > 8">
+    <a-card v-if="repair?.step && repair?.step > 8 && role !== 'user'">
       <template #title>
         服务评价
       </template>
