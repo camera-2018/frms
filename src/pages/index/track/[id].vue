@@ -498,11 +498,11 @@ async function handleRate() {
         <div class="flex items-begin gap-y-3 flex-1 flex-col">
           <div class="flex items-center gap-x-5">
             <div>满意程度</div>
-            <a-rate v-model="rate" allow-half :default-value="5" />
+            <a-rate v-model="rate" allow-half :default-value="5" :readonly="repair?.flags.is_rate" />
           </div>
           <div class="gap-y-2 flex flex-col">
             <div>评论</div>
-            <a-input v-model="comment" placeholder="发表评论" allow-clear />
+            <a-input v-model="comment" placeholder="发表评论" allow-clear :readonly="repair?.flags.is_rate" />
           </div>
         </div>
       </div>
