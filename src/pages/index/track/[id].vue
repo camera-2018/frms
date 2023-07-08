@@ -83,13 +83,13 @@ async function fetchInfo() {
   admin.value = payload.data.admin_info
 
   Object.assign(estimate_receipt, payload.data.repair_info.estimate_receipt)
-  estimate_cost.value = payload.data.repair_info.estimate_cost
+  estimate_cost.value = payload.data.repair_info.estimate_cost || 0
   Object.assign(actual_receipt, payload.data.repair_info.actual_receipt)
-  actual_cost.value = payload.data.repair_info.actual_cost
-  result.value = payload.data.repair_info.result
-  is_free.value = payload.data.repair_info.is_free
-  rate.value = payload.data.repair_info.rate
-  comment.value = payload.data.repair_info.comment
+  actual_cost.value = payload.data.repair_info.actual_cost || 0
+  result.value = payload.data.repair_info.result || ""
+  is_free.value = payload.data.repair_info.is_free || false
+  rate.value = payload.data.repair_info.rate || 5
+  comment.value = payload.data.repair_info.comment || ""
 }
 
 async function showAssignModal() {
@@ -312,6 +312,7 @@ async function handleRate() {
       <template #extra>
         <div class="flex gap-x-4 items-center">
           <a-button type="primary" v-if="!repair?.flags.is_accept && role === 'worker'" @click="acceptTask">接单</a-button>
+          <div :style="{ color: getColor('待接单') }" class="font-bold" v-if="!repair?.flags.is_accept">待接单</div>
           <div :style="{ color: getColor('已接单') }" class="font-bold" v-else>已接单</div>
         </div>
       </template>
@@ -502,7 +503,7 @@ async function handleRate() {
           </div>
           <div class="gap-y-2 flex flex-col">
             <div>评论</div>
-            <a-input v-model="comment" placeholder="发表评论" allow-clear :readonly="repair?.flags.is_rate" />
+            <a-input v-model="comment" placeholder="发表评论" :readonly="repair?.flags.is_rate" />
           </div>
         </div>
       </div>
@@ -522,7 +523,7 @@ async function handleRate() {
         <div class="flex items-begin gap-y-3 flex-1 flex-col">
           <div class="flex items-center gap-x-5">
             <div>满意程度</div>
-            <a-rate v-model="rate" allow-half readonly />
+            <a-rate v-model="rate" allow-half :default-value="5" readonly />
           </div>
           <div class="gap-y-2 flex flex-col">
             <div>评论</div>
@@ -532,7 +533,6 @@ async function handleRate() {
       </div>
     </a-card>
   </div>
-
 
 
   <a-modal :visible="modalVis" @cancel="modalVis = false">
